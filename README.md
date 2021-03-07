@@ -2,6 +2,8 @@
 Powershell module contain functions for createing Episerver/Optimizely CMS in Azure.  
 Note: This is a very early stage and has only been tested on Epinovas Azure portal. So there can be exceptions in your environment which we have not taken into account. Just so you know!  
 
+[How to create resource groups example](Documentation\CreateResourceGroup.md)
+
 # New-EpiserverCmsResourceGroup
 Create a Episerver CMS resource group in Azure.  
 ![Example of created resource group in Azure](Documentation/ResourceGroupInAzure2.jpg)  
