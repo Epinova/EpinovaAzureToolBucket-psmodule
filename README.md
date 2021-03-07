@@ -12,7 +12,9 @@ Create a Episerver CMS resource group in Azure.
 Your Azure SubscriptionId that you want to create the new resource group in.
 
 ### ResourceGroupName
-The client secret used to access the project.
+The client secret used to access the project.  
+Don´t put in any special characters and stuff. It could end up with errors because of the Azure portal naming convention.  
+_**Note: Storage account name must be between 3 and 24 characters in length and use numbers and lower-case letters only.**_
 
 ### DatabasePassword
 The password to your database that will be generated. You need to follow the password policy. More information about [Password policy in Azure AD](https://docs.microsoft.com/en-us/previous-versions/azure/jj943764(v=azure.100)?redirectedfrom=MSDN)  
