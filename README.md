@@ -24,7 +24,7 @@ The password will be transformed to a SecureString in the function.
 The tags that will be set on the resource group when it is created. We are using the following tags for our projects. These are recommended by Microsoft. You can read more in the [Resource naming and tagging decision guide](https://docs.microsoft.com/en-us/azure/cloud-adoption-framework/ready/azure-best-practices/naming-and-tagging)  
 Ex: 
 ```powershell
-$resourceGroupTags = @{
+$Tags = @{
     "Environment"="dev";
     "Owner"="ove.lartelius@epinova.se";
     "App"="Episerver";
