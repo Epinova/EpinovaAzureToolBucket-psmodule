@@ -77,7 +77,7 @@ function New-EpiserverCmsResourceGroup{
         [string] $ResourceGroupLocation = "westeurope",
 
         [Parameter(Mandatory = $false)]
-        [string] $ArmTemplateUri = "https://raw.githubusercontent.com/ovelartelius/epinova-arm-templates/main/epinova-azure-episerver-cms.json"
+        [string] $ArmTemplateUri = "https://raw.githubusercontent.com/Epinova/EpinovaAzureToolBucket-psmodule/main/ArmTemplates/epinova-azure-basic-episerver-cms.json"
 
     )
 
