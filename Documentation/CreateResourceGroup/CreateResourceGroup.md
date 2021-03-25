@@ -71,4 +71,4 @@ If you don´t want to use the Epinova ARM template that is used by default, you 
 The default setting for this is westeurope. Im sorry for all the developers that want their location to be somewhere else. But you can specify this yourself. Just use the parameter “-ResourceGroupLocation” and you can override that default setting.
 You can use “Get-AzLocation | Format-Table” to get a list of all available locations that you can specify as location.
 
-[<< Back](..\..\Readme.md)
+[<< Back](/Readme.md)
