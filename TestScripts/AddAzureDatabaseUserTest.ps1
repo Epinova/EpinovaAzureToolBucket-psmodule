@@ -5,10 +5,8 @@ Import-Module -Name E:\dev\EpinovaAzureToolBucket-psmodule\Modules\EpinovaAzureT
 $sqlServer = "project1-dev.database.windows.net"
 $sqlServerUsername = "project1-sa"
 $sqlServerPassword = "@wes0mep@ssw0rd"
-
 $targetDatabase = "project1-cms-dev"
 $newUsername = "project1dbuser"
 $newPassword = "mynew@wes0mep@ssw0rd"
 $newUserPermission = "db_owner"
-
 Add-AzureDatabaseUser -SqlServer $sqlServer -SqlServerUsername $sqlServerUsername -SqlServerPassword $sqlServerPassword -TargetDatabase $targetDatabase -NewUsername $newUsername -NewPassword $newPassword  -NewUserPermission $newUserPermission

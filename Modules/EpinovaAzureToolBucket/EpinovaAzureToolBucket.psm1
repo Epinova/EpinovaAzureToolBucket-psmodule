@@ -414,7 +414,9 @@ function Add-AzureDatabaseUser{
     $testNewUserResult = Test-AzureSqlConnection -ServerName $sqlServer -DatabaseName $targetDatabase -Credential $newCredentials
 
     if ($true -eq $testNewUserResult) {
-        Write-Host "Your new user has been created and can connect to the target database."
+        Write-Host "Connection to target database with new user succedded."
+        Write-Host " "
+        Write-Host "Result:----------------------------"
         Write-Host "SqlServer:        $sqlServer"
         Write-Host "Database:         $targetDatabase"
         Write-Host "Username:         $newUsername"
