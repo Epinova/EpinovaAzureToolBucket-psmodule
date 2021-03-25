@@ -32,4 +32,4 @@ Add-AzureDatabaseUser -SqlServer $sqlServer -SqlServerUsername $sqlServerUsernam
 You can also see that you will be able to copy the new connection string into your Episerver project and start using it.
 
 
-[<< Back](..\..\README.md)
+[<< Back](/README.md)

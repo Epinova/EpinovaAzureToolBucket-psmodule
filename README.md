@@ -5,14 +5,14 @@ Note: This is a very early stage and has only been tested on Epinovas Azure port
 [How to create resource groups example](Documentation/CreateResourceGroup/CreateResourceGroup.md)
 
 ## New-EpiserverCmsResourceGroup
-Create a Episerver CMS resource group in Azure.
+Create a Episerver CMS resource group in Azure.  
 [Documentation](Documentation/New-EpiserverCmsResourceGroup/New-EpiserverCmsResourceGroup.md)
 
 
 ## Get-EpiserverCmsConnectionStrings
-Get and print the connection strings for specified resource group.
+Get and print the connection strings for specified resource group.  
 [Documentation](Documentation/Get-EpiserverCmsConnectionStrings/Get-EpiserverCmsConnectionStrings.md)
 
 ## Add-AzureDatabaseUser
-Create a database user for a specific database on a Azure SQL Server instance.
+Create a database user for a specific database on a Azure SQL Server instance.  
 [Documentation](Documentation/Add-AzureDatabaseUser/Add-AzureDatabaseUser.md)

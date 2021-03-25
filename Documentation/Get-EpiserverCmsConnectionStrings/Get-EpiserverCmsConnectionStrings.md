@@ -38,4 +38,4 @@ Get-AzSubscription
 ## Manually
 ![Obtain Azure Subscription ID](ObtainAzureSubscriptionID.jpg)  
 
-[<< Back](..\..\README.md)
+[<< Back](/README.md)
