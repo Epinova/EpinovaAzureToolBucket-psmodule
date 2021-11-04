@@ -19,4 +19,4 @@ $ResourceGroupName = "deletemenow1235"
 $DatabasePassword = ""
 
 
-New-OptimizelyCmsResourceGroup -SubscriptionId $SubscriptionId -ResourceGroupName $ResourceGroupName -DatabasePassword $DatabasePassword -Tags $Tags #-ArmTemplateUri = ‘https://raw.githubusercontent.com/yourrepository/arm-templates/main/azure-optimizely-cms.json’
+New-OptimizelyCmsResourceGroup -SubscriptionId $SubscriptionId -ResourceGroupName $ResourceGroupName -DatabasePassword $DatabasePassword -Tags $Tags #-ArmTemplateUri ‘https://raw.githubusercontent.com/yourrepository/arm-templates/main/azure-optimizely-cms.json’
