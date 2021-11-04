@@ -1,0 +1,279 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "BaseName": {
+      "type": "string",
+      "minLength": 1,
+      "defaultValue": "[resourceGroup().name]",
+      "metadata": {
+        "description": "Base name to use when setup this environment."
+      }
+    },
+    "StorageAccountType": {
+      "type": "string",
+      "defaultValue": "Standard_LRS",
+      "allowedValues": [
+        "Standard_LRS",
+        "Standard_ZRS",
+        "Standard_GRS",
+        "Standard_RAGRS",
+        "Premium_LRS"
+      ],
+      "metadata": {
+        "description": "Describes the Storage Account Type"
+      }
+    },
+    "sqlserverAdminLogin": {
+      "type": "string",
+      "minLength": 1,
+      "defaultValue": "[concat(resourceGroup().name, '-sa')]",
+      "metadata": {
+        "description": "Name of the Sql Admin Account"
+      }
+    },
+    "sqlserverAdminLoginPassword": {
+      "type": "securestring",
+      "metadata": {
+        "description": "Password of the Sql Admin Account"
+      }
+    },
+    "SQL-DatabaseCollation": {
+      "type": "string",
+      "minLength": 1,
+      "defaultValue": "SQL_Latin1_General_CP1_CI_AS",
+      "metadata": {
+        "description": "Describes the performance level for SQL Databse Collation"
+      }
+    },
+    "location": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().location]",
+      "metadata": {
+        "description": "Location for all resources."
+      }
+    }
+  },
+  "variables": {
+    "location": "[parameters('location')]",
+    "defaultSASKeyName": "RootManageSharedAccessKey",
+    "defaultAuthRuleResourceId": "[resourceId('Microsoft.ServiceBus/namespaces/authorizationRules', concat(parameters('BaseName'), '-servicebus'), variables('defaultSASKeyName'))]",
+    "storageAccountApiVersion": "2015-06-15",
+    "serviceBusApiVersion": "2015-08-01",
+    "storageId": "[resourceId('Microsoft.Storage/storageAccounts', parameters('BaseName'))]",
+    "storageConnectionStringPrefix": "[concat('DefaultEndpointsProtocol=https;AccountName=',parameters('BaseName'),';AccountKey=')]"
+  },
+  "resources": [
+    {
+      "name": "[concat(parameters('BaseName'), '-hostingplan')]",
+      "type": "Microsoft.Web/serverfarms",
+      "location": "[parameters('location')]",
+      "apiVersion": "2020-12-01",
+      "tags": {
+        "displayName": "[concat(parameters('BaseName'), '-hostingplan')]"
+      },
+      "sku": {
+        "name": "B1",
+        "tier": "Basic",
+        "size": "B1",
+        "family": "B",
+        "capacity": 1
+      },
+      "kind": "linux",
+      "properties": {
+        "name": "[concat(parameters('BaseName'), '-hostingplan')]",
+        "perSiteScaling": false,
+        "reserved": true,
+        "targetWorkerCount": 0,
+        "targetWorkerSizeId": 0
+      }
+    },
+    {
+      "name": "[concat(parameters('BaseName'), '-prod')]",
+      "type": "Microsoft.Web/sites",
+      "location": "[parameters('location')]",
+      "apiVersion": "2015-08-01",
+      "dependsOn": [
+        "[concat('Microsoft.Web/serverfarms/', parameters('BaseName'), '-hostingplan')]",
+        "[concat('Microsoft.Storage/storageAccounts/', parameters('BaseName'))]",
+        "[concat('Microsoft.Sql/servers/', parameters('BaseName'), '-sqlserver')]",
+        "[concat('Microsoft.ServiceBus/namespaces/', parameters('BaseName'), '-servicebus')]"
+      ],
+      "tags": {
+        "[concat('hidden-related:', resourceGroup().id, '/providers/Microsoft.Web/serverfarms/', parameters('BaseName'), '-hostingplan')]": "Resource",
+        "displayName": "[concat(parameters('BaseName'), '-prod')]"
+      },
+      "properties": {
+        "name": "[concat(parameters('BaseName'), '-prod')]",
+        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms/', concat(parameters('BaseName'), '-hostingplan'))]",
+        "webSocketsEnabled": true,
+        "alwaysOn": false
+      },
+      "resources": [
+        {
+          "name": "connectionstrings",
+          "type": "config",
+          "apiVersion": "2015-08-01",
+          "dependsOn": [
+            "[concat('Microsoft.Web/sites/', parameters('BaseName'), '-prod')]"
+          ],
+          "tags": {
+            "displayName": "[concat(parameters('BaseName'), '-prod-ConnectionStrings')]"
+          },
+          "properties": {
+            "EPiServerAzureBlobs": {
+              "value": "[concat(variables('storageConnectionStringPrefix'), listkeys(variables('storageId'), variables('storageAccountApiVersion')).key1)]",
+              "type": "Custom"
+            },
+            "EPiServerAzureEvents": {
+              "value": "[listkeys(variables('defaultAuthRuleResourceId'), variables('serviceBusApiVersion')).primaryConnectionString]",
+              "type": "Custom"
+            },
+            "EPiServerDB": {
+              "value": "[concat('Server=tcp:', reference(concat('Microsoft.Sql/servers/', parameters('BaseName'), '-sqlserver')).fullyQualifiedDomainName, ',1433;Initial Catalog=', concat(parameters('BaseName'), '-opti'), ';User Id=', parameters('sqlserverAdminLogin'), '@', concat(parameters('BaseName'), '-sqlserver'), ';Password=', parameters('sqlserverAdminLoginPassword'), ';Trusted_Connection=False;Encrypt=True;Connection Timeout=30;MultipleActiveResultSets=True')]",
+              "type": "SQLAzure"
+            }
+          }
+        },
+        {
+          "name": "appsettings",
+          "type": "config",
+          "apiVersion": "2015-08-01",
+          "dependsOn": [
+            "[resourceId('Microsoft.Web/sites', concat(parameters('BaseName'), '-prod'))]"
+          ],
+          "tags": {
+            "displayName": "[concat(parameters('BaseName'), '-prod-ApplicationSettings')]"
+          },
+          "properties": {
+            "episerver:ReadOnlyConfigurationAPI": "True"
+          }
+        },
+        {
+          "name": "web",
+          "type": "config",
+          "apiVersion": "2015-08-01",
+          "dependsOn": [
+            "[resourceId('Microsoft.Web/sites', concat(parameters('BaseName'), '-prod'))]"
+          ],
+          "tags": {
+            "displayName": "[concat(parameters('BaseName'), '-prod-GeneralSettings')]"
+          },
+          "properties": {
+            "webSocketsEnabled": "True",
+            "alwaysOn": "False"
+          }
+        }
+      ]
+    },
+    {
+      "name": "[parameters('BaseName')]",
+      "type": "Microsoft.Storage/storageAccounts",
+      "location": "[parameters('location')]",
+      "apiVersion": "2015-06-15",
+      "tags": {
+        "displayName": "StorageAccount"
+      },
+      "properties": {
+        "accountType": "[parameters('StorageAccountType')]"
+      },
+      "resources": [
+        {
+            "type": "blobServices/containers",
+            "apiVersion": "2018-03-01-preview",
+            "name": "default/mysitemedia",
+            "dependsOn": [
+                "[parameters('BaseName')]"
+            ],
+            "properties": {
+                "publicAccess": "Container"
+            }
+        },
+        {
+            "type": "blobServices/containers",
+            "apiVersion": "2018-03-01-preview",
+            "name": "default/db-backups",
+            "dependsOn": [
+                "[parameters('BaseName')]"
+            ],
+            "properties": {
+                "publicAccess": "None"
+            }
+        }
+    ]
+    },
+    {
+      "apiVersion": "2014-04-01",
+      "location": "[parameters('location')]",
+      "name": "[concat(parameters('BaseName'), '-sqlserver')]",
+      "properties": {
+        "administratorLogin": "[parameters('sqlserverAdminLogin')]",
+        "administratorLoginPassword": "[parameters('sqlserverAdminLoginPassword')]",
+        "version": "12.0"
+      },
+      "resources": [
+        {
+          "name": "AllowAllWindowsAzureIps",
+          "type": "firewallRules",
+          "location": "[parameters('location')]",
+          "apiVersion": "2014-04-01",
+          "dependsOn": [
+            "[concat('Microsoft.Sql/servers/', parameters('BaseName'), '-sqlserver')]"
+          ],
+          "properties": {
+            "startIpAddress": "0.0.0.0",
+            "endIpAddress": "0.0.0.0"
+          }
+        },
+        {
+          "name": "[concat(parameters('BaseName'), 'opticms')]",
+          "type": "databases",
+          "location": "[parameters('location')]",
+          "apiVersion": "2021-02-01-preview",
+          "dependsOn": [
+            "[concat(parameters('BaseName'), '-sqlserver')]"
+          ],
+          "kind": "v12.0,user",
+          "tags": {
+            "displayName": "SQL-Database"
+          },
+          "properties": {
+            "collation": "[parameters('SQL-DatabaseCollation')]",
+            "catalogCollation": "[parameters('SQL-DatabaseCollation')]",
+            "maxSizeBytes": "5368709120",
+            "currentServiceObjectiveName": "S0",
+            "requestedServiceObjectiveName": "S0",
+            "defaultSecondaryLocation": "westeurope",
+            "zoneRedundant": false,
+            "readScale": "Disabled",
+            "storageAccountType": "GRS",
+            "currentSku": {
+              "name": "Standard",
+              "tier": "Standard",
+              "capacity": 10
+          }
+          }
+        }
+      ],
+      "tags": {
+        "displayName": "SQL-Server"
+      },
+      "type": "Microsoft.Sql/servers"
+    },
+    {
+      "apiVersion": "2015-08-01",
+      "name": "[concat(parameters('BaseName'), '-servicebus')]",
+      "type": "Microsoft.ServiceBus/namespaces",
+      "location": "[variables('location')]",
+      "kind": "Messaging",
+      "tags": {
+        "displayName": "ServiceBus"
+      },
+      "sku": {
+        "name": "Standard",
+        "tier": "Standard"
+      },
+      "properties": {}
+    }
+  ]
+}
