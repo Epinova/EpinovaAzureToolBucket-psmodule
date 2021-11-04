@@ -1,4 +1,4 @@
-# Create a Episerver/Optimizely CMS setup in Azure portal
+# Create a Optimizely (aka Episerver) CMS setup in Azure portal
 
 ![Resource group in Azure portal](ResourceGroupInAzure2.jpg)
 
@@ -29,7 +29,7 @@ Generate a new password that you will use for this new SqlServer/Database. Make 
     $Tags = @{
         "Environment"="dev";
         "Owner"="ove.lartelius@epinova.se";
-        "App"="Episerver";
+        "App"="Optimizely";
         "Client"="Customer AB";
         "Project"="External Website 2021";
         "ManagedBy"="ove.lartelius@epinova.se";
@@ -37,7 +37,7 @@ Generate a new password that you will use for this new SqlServer/Database. Make 
         "Department"="IT";
         "Expires"="2030-01-01";
         }
-    New-EpiserverCmsResourceGroup -SubscriptionId $SubscriptionId -ResourceGroupName $ResourceGroupName -DatabasePassword $DatabasePassword -Tags $Tags
+    New-OptimizelyCmsResourceGroup -SubscriptionId $SubscriptionId -ResourceGroupName $ResourceGroupName -DatabasePassword $DatabasePassword -Tags $Tags
 ```
 My prompt look like this now:  
 ![Prompt](InstallAndRun_1.jpg)
@@ -58,14 +58,14 @@ And in Azure portal you can see that all the resources have been created. You ca
 
 8.	And now we can do that last step. Retrieve the connection strings for the database, service bus and storage account. I do that by writing:
 ``` powershell 
-Get-EpiserverCmsConnectionStrings -SubscriptionId '95a9fd36-7851-4918-b8c9-f146a219982c' -ResourceGroupName 'mycoolwebsite' -DatabasePassword 'KXIN_rhxh3holt_s8it'
+Get-OptimizelyCmsConnectionStrings -SubscriptionId '95a9fd36-7851-4918-b8c9-f146a219982c' -ResourceGroupName 'mycoolwebsite' -DatabasePassword 'KXIN_rhxh3holt_s8it'
 ```  
-![Get-EpiserverCmsConnectionStrings result](ConnectionStringsResult2.jpg)  
+![Get-OptimizelyCmsConnectionStrings result](ConnectionStringsResult2.jpg)  
 You can now copy and paste this information to your web.config.
 
 ## More advance stuff
 ### Use your own ARM template!
-If you don´t want to use the Epinova ARM template that is used by default, you can always take a copy of the https://raw.githubusercontent.com/Epinova/EpinovaAzureToolBucket-psmodule/main/ArmTemplates/epinova-azure-basic-episerver-cms.json and make your own ARM template. You can now specify your own ARM template when execute New-EpiserverCmsResourceGroup with the parameter: “-ArmTemplateUri = ‘https://raw.githubusercontent.com/yourrepository/arm-templates/main/azure-episerver-cms.json’”
+If you don´t want to use the Epinova ARM template that is used by default, you can always take a copy of the https://raw.githubusercontent.com/Epinova/EpinovaAzureToolBucket-psmodule/main/ArmTemplates/epinova-azure-basic-optimizely-cms.json and make your own ARM template. You can now specify your own ARM template when execute New-OptimizelyCmsResourceGroup with the parameter: “-ArmTemplateUri = ‘https://raw.githubusercontent.com/yourrepository/arm-templates/main/azure-optimizely-cms.json’”
 
 ### ResourceGroupLocation
 The default setting for this is westeurope. Im sorry for all the developers that want their location to be somewhere else. But you can specify this yourself. Just use the parameter “-ResourceGroupLocation” and you can override that default setting.
