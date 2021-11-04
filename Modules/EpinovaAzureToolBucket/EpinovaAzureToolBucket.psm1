@@ -159,13 +159,15 @@ function New-OptimizelyCmsResourceGroup{
 
     )
 
+    $tagsString = $Tags | Out-String
+
     Write-Host "New-OptimizelyCmsResourceGroup - Inputs:----------"
     Write-Host "SubscriptionId:            $SubscriptionId"
     Write-Host "ResourceGroupName:         $ResourceGroupName"
     Write-Host "DatabasePassword:          **** (it is a secret...)"
-    Write-Host "Tags:                      $Tags"
     Write-Host "ResourceGroupLocation:     $ResourceGroupLocation"
     Write-Host "ARMTemplateUri:            $ArmTemplateUri"
+    Write-Host "Tags:                      $tagsString"
     Write-Host "------------------------------------------------"
 
     $databasePasswordSecureString = ConvertTo-SecureString $DatabasePassword -AsPlainText -Force
@@ -179,7 +181,7 @@ function New-OptimizelyCmsResourceGroup{
     Get-AzResourceGroup -Name $ResourceGroupName -ErrorVariable notPresent -ErrorAction SilentlyContinue
     # Check if the resource group already exist
     if ($notPresent){
-        Write-Host "Resource group $ResourceGroupName does not exist."
+        Write-Host "Resource group $ResourceGroupName does not exist. We should be able to create it."
     } else {
         # The Resource group $resourceGroupName already exists. Throw error and exit.
         Write-Error "Resource group $ResourceGroupName already exists."
@@ -197,8 +199,14 @@ function New-OptimizelyCmsResourceGroup{
         New-AzTag -ResourceId $resourceGroup.ResourceId -Tag $Tags
     }
 
-    # Create resources from deployment template
-    New-AzResourceGroupDeployment -ResourceGroupName $ResourceGroupName -TemplateUri $ArmTemplateUri -sqlserverAdminLoginPassword $databasePasswordSecureString
+    Get-AzResourceGroup -Name $ResourceGroupName -ErrorVariable notPresent -ErrorAction SilentlyContinue
+    if ($notPresent){
+        Write-Error "Resource group $ResourceGroupName could not be created. Will cancel resource group deployment."
+        exit
+    } else {
+        # Create resources from deployment template
+        New-AzResourceGroupDeployment -ResourceGroupName $ResourceGroupName -TemplateUri $ArmTemplateUri -sqlserverAdminLoginPassword $databasePasswordSecureString
+    }
 
 }
 
