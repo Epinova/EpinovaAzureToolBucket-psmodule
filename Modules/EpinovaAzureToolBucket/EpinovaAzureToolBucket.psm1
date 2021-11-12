@@ -1,6 +1,4 @@
 <#
-
-
 .DESCRIPTION
     Help functions for Epinova DXP vs Azure Portal.
 #>
