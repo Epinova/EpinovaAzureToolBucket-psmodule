@@ -17,6 +17,11 @@ Get and print the connection strings for specified resource group.
 Create a database user for a specific database on a Azure SQL Server instance.  
 [Documentation](Documentation/Add-AzureDatabaseUser/Add-AzureDatabaseUser.md)
 
+## Invoke-AzureDatabaseExport
+Backup a database and store in storage account container.  
+[Documentation](Documentation/Invoke-AzureDatabaseExport/Invoke-AzureDatabaseExport.md)
+
+
 ## Old
 ## New-EpiserverCmsResourceGroup
 Create a Episerver CMS resource group in Azure.  

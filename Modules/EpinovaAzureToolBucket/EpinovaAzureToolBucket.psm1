@@ -5,6 +5,8 @@
 
 Set-StrictMode -Version Latest
 
+$azureConnection = $null
+
 # PRIVATE METHODS
  
 function Test-AzureSqlConnection {
@@ -85,6 +87,139 @@ function Invoke-DatabaseExecuteNonQueryCommand{
 
 }
 
+function Get-DefaultSqlServer{
+<#
+    .SYNOPSIS
+        List all resources for a resource group and grab the first SqlServer it can find.
+
+    .DESCRIPTION
+        List all resources for a resource group and grab the first SqlServer it can find.  
+        Will only work if connection to Azure aleasy exist.
+
+    .PARAMETER ResourceGroupName
+        The resource group where we will look for the SqlServer.
+
+    .EXAMPLE
+        Get-DefaultSqlServer -ResourceGroupName $ResourceGroupName
+
+    #>
+    param(
+        [Parameter(Mandatory)]
+        [string]$ResourceGroupName
+    )
+    $sqlServer = Get-AzResource -ResourceGroupName $ResourceGroupName | Where-Object { $_.ResourceType -eq "Microsoft.Sql/servers"}
+    if ($null -eq $sqlServer) {
+        Write-Error "Could not find default SqlServer in ResourceGroup: $ResourceGroupName."
+        exit
+    }
+    return $sqlServer
+}
+
+function Get-DefaultStorageAccount{
+    <#
+        .SYNOPSIS
+            List all resources for a resource group and grab the first StorageAccount it can find.
+    
+        .DESCRIPTION
+            List all resources for a resource group and grab the first StorageAccount it can find.  
+            Will only work if connection to Azure aleasy exist.
+    
+        .PARAMETER ResourceGroupName
+            The resource group where we will look for the StorageAccount.
+
+        .PARAMETER StorageAccountName
+            The name of the StorageAccount.
+
+        .EXAMPLE
+            Get-DefaultStorageAccount -ResourceGroupName $ResourceGroupName
+    
+        #>
+        param(
+            [Parameter(Mandatory = $true)]
+            [ValidateNotNullOrEmpty()]
+            [string]$ResourceGroupName,
+
+            [Parameter(Mandatory = $false)]
+            [string] $StorageAccountName
+        )
+        if ($null -eq $StorageAccountName -or "" -eq $StorageAccountName) {
+            $storageAccount = Get-AzStorageAccount -ResourceGroupName $ResourceGroupName
+            #$storageAccount #For debuging
+            if ($storageAccount -is [array]){
+                if ($storageAccount.Count -ne 1) {
+                    if ($storageAccount.Count -gt 1) {
+                        Write-Warning "Found more then 1 StorageAccount in ResourceGroup: $ResourceGroupName."
+                    }
+                    if ($storageAccount.Count -eq 0) {
+                        Write-Warning "Could not find a StorageAccount in ResourceGroup: $ResourceGroupName."
+                    }
+                    exit
+                }
+            }
+        } else {
+            $storageAccount = Get-AzStorageAccount -ResourceGroupName $ResourceGroupName -Name $StorageAccountName
+            if ($null -eq $storageAccount) {
+                Write-Error "Did not find StorageAccount in ResourceGroup: $ResourceGroupName."
+                exit
+            }
+        }
+        return $storageAccount
+}
+
+function Get-StorageAccountContainer{
+    <#
+        .SYNOPSIS
+            Get the container for the specified StorageAccount.
+    
+        .DESCRIPTION
+            Get the container for the specified StorageAccount.  
+            Will only work if connection to Azure aleasy exist.
+
+        .PARAMETER StorageAccount
+            The StorageAccount where the container should exist.
+
+        .PARAMETER ContainerName
+            The container name.
+    
+        .EXAMPLE
+            Get-StorageAccountContainer -StorageAccount $StorageAccount -ContainerName $ContainerName
+
+        .EXAMPLE
+            $storageAccount = Get-DefaultStorageAccount ResourceGroupName $ResourceGroupName
+            Get-StorageAccountContainer -StorageAccount $storageAccount -ContainerName $ContainerName
+
+        #>
+        param(
+            [Parameter(Mandatory)]
+            [object]$StorageAccount,
+            [Parameter(Mandatory)]
+            [string]$ContainerName
+        )
+        $storageContainer = Get-AzRmStorageContainer -StorageAccount $StorageAccount -ContainerName $ContainerName
+        #$storageContainer
+        if ($null -eq $storageContainer) {
+            Write-Warning "Could not find a StorageAccount container '$($storageContainer.Name)' in ResourceGroup: $($StorageAccount.ResourceGroupName))."
+            exit
+        } else {
+            Write-Host "Connected to destination StorageAccount container $($storageContainer.Name)"
+        }
+
+        return $storageContainer
+}
+
+function Connect-AzureSubscriptionAccount{
+    if($null -eq $azureConnection -or $null -eq $azureConnection.Account){
+        try{
+            $azureConnection = Connect-AzAccount -SubscriptionId $SubscriptionId
+            Write-Host "Connected to subscription $SubscriptionId"
+        }
+        catch {
+            $message = $_.Exception.message
+            Write-Error $message
+            exit
+        }
+    }
+}
 
 # END PRIVATE METHODS
 function New-OptimizelyCmsResourceGroup{
@@ -633,4 +768,148 @@ function Add-AzureDatabaseUser{
     Write-Host "--- THE END ---"
 }
 
-Export-ModuleMember -Function @( 'New-OptimizelyCmsResourceGroup', 'Get-OptimizelyCmsConnectionStrings', 'New-EpiserverCmsResourceGroup', 'Get-EpiserverCmsConnectionStrings', 'Add-AzureDatabaseUser' )
+function Invoke-AzureDatabaseBackup{
+    <#
+    .SYNOPSIS
+        Backup a database and store in storage account container.
+
+    .DESCRIPTION
+        Backup a database and store in storage account container.
+
+    .PARAMETER SubscriptionId
+        Your Azure SubscriptionId where the database exist that you want to backup.
+
+    .PARAMETER ResourceGroupName
+        The resource group name where the database exist that you want to backup.
+
+    .PARAMETER SqlServerName
+        The Sql Server that contain the database that you want to backup. If empty we will try to find the first SqlServer resource in the specified resource group.
+
+    .PARAMETER SqlDatabaseName
+        Name of the database that should be backed up.
+
+    .PARAMETER SqlDatabaseLogin
+        Administrator username for the SqlServer.
+
+    .PARAMETER SqlDatabasePassword
+        Administrator password for the SqlServer.
+
+    .PARAMETER StorageAccountName
+        The StorageAccount that should hold the BACPAC file after backup. If empty we will try to find the first StorageAccount resource in the specified resource group.
+
+    .PARAMETER StorageAccountContainer
+        The StorageAccount container name that should hold the BACPAC file after backup. If empty we will try to find the container with name "db-backups".
+
+    .EXAMPLE
+        Invoke-AzureDatabaseBackup -SubscriptionId $SubscriptionId -ResourceGroupName $ResourceGroupName -SqlServerName $SqlServerName -SqlDatabaseName $SqlDatabaseName -SqlDatabaseLogin $SqlDatabaseLogin -SqlDatabasePassword $SqlDatabasePassword -StorageAccountName $StorageAccountName -StorageAccountContainer $StorageAccountContainer
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [string] $SubscriptionId,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [string] $ResourceGroupName,
+
+        [Parameter(Mandatory = $false)]
+        [string] $SqlServerName,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [string] $SqlDatabaseName,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [string] $SqlDatabaseLogin,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [string] $SqlDatabasePassword,
+
+        [Parameter(Mandatory = $false)]
+        [string] $StorageAccountName,
+
+        [Parameter(Mandatory = $false)]
+        [string] $StorageAccountContainer
+    )
+
+    $securePassword = ConvertTo-SecureString -String $SqlDatabasePassword -AsPlainText -Force
+    $sqlCredentials = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $SqlDatabaseLogin, $securePassword
+
+    Connect-AzureSubscriptionAccount
+
+    if ($null -eq $StorageAccountName -or "" -eq $StorageAccountName){
+        $storageAccount = Get-DefaultStorageAccount -ResourceGroupName $ResourceGroupName
+        $storageAccountName = $storageAccount.StorageAccountName
+    } else {
+        $storageAccount = Get-DefaultStorageAccount -ResourceGroupName $ResourceGroupName -StorageAccountName $StorageAccountName
+        $storageAccountName = $storageAccount.StorageAccountName
+    }
+    Write-Host "Found StorageAccount '$storageAccountName'"
+    if ($null -eq $StorageAccountContainer -or "" -eq $StorageAccountContainer){
+        $storageContainer = Get-StorageAccountContainer -StorageAccount $storageAccount -ContainerName $StorageAccountContainer
+        $storageContainerName = $storageContainer.Name
+    } else {
+        $storageContainerName = $StorageAccountContainer
+    }
+    Write-Host "Found StorageAccount container '$storageContainerName'"
+    
+    if ($null -eq $SqlServerName -or "" -eq $SqlServerName) {
+        $SqlServerName = Get-DefaultSqlServer -ResourceGroupName $ResourceGroupName
+    }
+    Write-Host "Found SqlServer '$SqlServerName'"
+    
+    # Fix some information about the destination storage account
+    $bacpacFilename = $SqlDatabaseName + "_" + (Get-Date).ToString("yyyy-MM-dd-HH-mm") + ".bacpac"
+    $storageKeyType = "StorageAccessKey"
+    $storageKey = (Get-AzStorageAccountKey -ResourceGroupName $ResourceGroupName -AccountName $storageAccountName)| Where-Object {$_.KeyName -eq "key2"}
+    $baseStorageUri = "https://" + $storageAccountName + ".blob.core.windows.net"
+    $bacpacUri = $baseStorageUri + "/" + $storageContainerName + "/" + $bacpacFilename
+    
+    Write-Host "Invoke-AzureDatabaseBackup - Inputs:----------"
+    Write-Host "SubscriptionId:            $SubscriptionId"
+    Write-Host "ResourceGroupName:         $ResourceGroupName"
+    Write-Host "SqlServerName:             $SqlServerName"
+    Write-Host "SqlDatabaseName:           $SqlDatabaseName"
+    Write-Host "ResourceGroupName:         $ResourceGroupName"
+    Write-Host "SqlDatabaseLogin:          $SqlDatabaseLogin"
+    Write-Host "SqlDatabasePassword:       **** (it is a secret...)"
+    Write-Host "StorageAccountName:        $storageAccountName"
+    Write-Host "StorageAccountContainer:   $storageContainerName"
+    Write-Host "StorageKey:                $($storageKey.Value))"
+    Write-Host "Bacpac file:               $bacpacFilename"
+    Write-Host "Bacpac URI:                $bacpacUri"
+    Write-Host "------------------------------------------------"
+    
+    # Do a database backup of the destination database.
+    $exportRequest = New-AzSqlDatabaseExport -ResourceGroupName $ResourceGroupName -ServerName $SqlServerName -DatabaseName $SqlDatabaseName -StorageKeyType $storageKeyType -StorageKey $storageKey.Value -StorageUri $bacpacUri -AdministratorLogin $sqlCredentials.UserName -AdministratorLoginPassword $sqlCredentials.Password
+    if ($null -ne $exportRequest) {
+        $operationStatusLink = $exportRequest.OperationStatusLink
+        $operationStatusLink
+        $exportStatus = Get-AzSqlDatabaseImportExportStatus -OperationStatusLink $operationStatusLink
+        [Console]::Write("Exporting.")
+        $lastStatusMessage = ""
+        while ($exportStatus.Status -eq "InProgress")
+        {
+            Start-Sleep -s 10
+            $exportStatus = Get-AzSqlDatabaseImportExportStatus -OperationStatusLink $operationStatusLink
+            if ($lastStatusMessage -ne $exportStatus.StatusMessage) {
+                $lastStatusMessage = $exportStatus.StatusMessage
+                $progress = $lastStatusMessage.Replace("Running, Progress = ", "")
+                [Console]::Write($progress)
+            }
+            [Console]::Write(".")
+        }
+        [Console]::WriteLine("")
+        $exportStatus
+        Write-Host "Database '$SqlDatabaseName' is backed up. '$bacpacUri'"
+    } else {
+        Write-Error "Could not start backup of $SqlDatabaseName"
+        exit
+    }
+    Write-Host "--- THE END ---"
+}
+
+Export-ModuleMember -Function @( 'New-OptimizelyCmsResourceGroup', 'Get-OptimizelyCmsConnectionStrings', 'New-EpiserverCmsResourceGroup', 'Get-EpiserverCmsConnectionStrings', 'Add-AzureDatabaseUser', 'Invoke-AzureDatabaseBackup' )
