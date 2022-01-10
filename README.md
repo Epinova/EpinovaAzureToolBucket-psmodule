@@ -17,9 +17,9 @@ Get and print the connection strings for specified resource group.
 Create a database user for a specific database on a Azure SQL Server instance.  
 [Documentation](Documentation/Add-AzureDatabaseUser/Add-AzureDatabaseUser.md)
 
-## Invoke-AzureDatabaseBackup
+## Backup-Database
 Backup/Export a database and store BACPAC in storage account container.  
-[Documentation](Documentation/Invoke-AzureDatabaseBackup/Invoke-AzureDatabaseBackup.md)
+[Documentation](Documentation/Backup-Database/Backup-Database.md)
 
 ## Invoke-AzureDatabaseCopy
 Copy a database from one place to another. If the destination database exist it will be 'overwritten'. You can decide if you want to make a backup of the destination database before it is dropped.  

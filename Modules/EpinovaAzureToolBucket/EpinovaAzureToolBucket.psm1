@@ -768,7 +768,7 @@ function Add-AzureDatabaseUser{
     Write-Host "--- THE END ---"
 }
 
-function Invoke-AzureDatabaseBackup{
+function Backup-Database{
     <#
     .SYNOPSIS
         Backup a database and store in storage account container.
@@ -1058,7 +1058,7 @@ function Invoke-AzureDatabaseCopy{
             exit
         }
 
-        Invoke-AzureDatabaseBackup -SubscriptionId $SubscriptionId -ResourceGroupName $DestinationResourceGroupName -SqlServerName $DestinationSqlServerName -SqlDatabaseName $DestinationSqlDatabaseName -SqlDatabaseLogin $DestinationSqlDatabaseLogin -SqlDatabasePassword $DestinationSqlDatabasePassword -StorageAccountName $DestinationStorageAccount -StorageAccountContainer $DestinationStorageAccountContainer
+        Backup-Database -SubscriptionId $SubscriptionId -ResourceGroupName $DestinationResourceGroupName -SqlServerName $DestinationSqlServerName -SqlDatabaseName $DestinationSqlDatabaseName -SqlDatabaseLogin $DestinationSqlDatabaseLogin -SqlDatabasePassword $DestinationSqlDatabasePassword -StorageAccountName $DestinationStorageAccount -StorageAccountContainer $DestinationStorageAccountContainer
     }
 
     # Drop destination database if exist
@@ -1100,11 +1100,8 @@ function Remove-Blobs{
     .PARAMETER ContainerName
         The container name where the blobs are that you want to remove.
 
-    .PARAMETER MaxBlobToRemove
-        Number of max blobs to remove. If 0 every blob will be removed.
-
     .EXAMPLE
-        Remove-Blobs -SubscriptionId $SubscriptionId -ResourceGroupName $ResourceGroupName -StorageAccountName $StorageAccountName -ContainerName $ContainerName -MaxBlobToRemove $MaxBlobToRemove
+        Remove-Blobs -SubscriptionId $SubscriptionId -ResourceGroupName $ResourceGroupName -StorageAccountName $StorageAccountName -ContainerName $ContainerName
 
     .EXAMPLE
         Remove-Blobs -SubscriptionId $SubscriptionId -ResourceGroupName $ResourceGroupName -ContainerName $ContainerName
@@ -1123,10 +1120,7 @@ function Remove-Blobs{
         [string] $StorageAccountName,
 
         [Parameter(Mandatory = $true)]
-        [string] $ContainerName#,
-
-        #[Parameter(Mandatory = $true)]
-        #[int] $MaxBlobToRemove
+        [string] $ContainerName
     )
 
     Connect-AzureSubscriptionAccount
@@ -1136,7 +1130,6 @@ function Remove-Blobs{
     Write-Host "ResourceGroupName:      $ResourceGroupName"
     Write-Host "StorageAccountName:     $StorageAccountName"
     Write-Host "ContainerName:          $ContainerName"
-    #Write-Host "MaxBlobToRemove:        $MaxBlobToRemove (0=All)"
     Write-Host "------------------------------------------------"
 
     $storageAccount = Get-AzStorageAccount -ResourceGroupName $ResourceGroupName -Name $StorageAccountName 
@@ -1144,40 +1137,6 @@ function Remove-Blobs{
 
     (Get-AzStorageBlob -Container $ContainerName -Context $context | Sort-Object -Property LastModified -Descending) | Remove-AzStorageBlob
       
-    # $blobContents = Get-AzStorageBlob -Container $ContainerName -Context $context | Sort-Object -Property LastModified -Descending
-    
-    # Write-Host "Found $($blobContents.Length) BlobContent in container '$ContainerName'."
-    
-    # if ($blobContents.Length -eq 0) {
-    #     Write-Warning "No blob/files found in the container '$ContainerName'"
-    #     exit
-    # }
-    
-    # if ($MaxBlobToRemove -eq 0) {
-    #     $MaxBlobToRemove = [int]$blobContents.Length
-    # }
-    # $downloadedFiles = 0
-    # Write-Host "---------------------------------------------------"
-    # foreach($blobContent in $blobContents)  
-    # {  
-    #     if ($downloadedFiles -ge $MaxBlobToRemove){
-    #         Write-Host "Hit max blobs to delete ($MaxBlobToRemove)"
-    #         break
-    #     }
-    
-    #     $filePath = Join-Parts -Separator '\' -Parts $downloadFolder, $blobContent.Name
-    #     $fileExist = Test-Path $filePath -PathType Leaf
-    
-    #     if ($fileExist -eq $false -or $true -eq $overwriteExistingFiles){
-    #         ## Delete blob content 
-    #         Write-Host "Delete #$($downloadedFiles + 1) - $($blobContent.Name)" 
-    #         Remove-AzStorageBlob -Container $ContainerName -Context $context -Blob $blobContent.Name -Force  
-    #         $downloadedFiles++
-    #     }
-    
-    #     $procentage = [int](($downloadedFiles / $MaxBlobToRemove) * 100)
-    #     Write-Progress -Activity "Deleted files" -Status "$procentage% Complete:" -PercentComplete $procentage;
-    # }
     Write-Host "Remove-Blobs finished"
 }
 
@@ -1262,4 +1221,4 @@ function Copy-Blobs{
     Write-Host "Copy-Blobs finished"
 }
 
-Export-ModuleMember -Function @( 'New-OptimizelyCmsResourceGroup', 'Get-OptimizelyCmsConnectionStrings', 'New-EpiserverCmsResourceGroup', 'Get-EpiserverCmsConnectionStrings', 'Add-AzureDatabaseUser', 'Invoke-AzureDatabaseBackup', 'Invoke-AzureDatabaseCopy', 'Remove-Blobs', 'Copy-Blobs' )
+Export-ModuleMember -Function @( 'New-OptimizelyCmsResourceGroup', 'Get-OptimizelyCmsConnectionStrings', 'New-EpiserverCmsResourceGroup', 'Get-EpiserverCmsConnectionStrings', 'Add-AzureDatabaseUser', 'Backup-Database', 'Invoke-AzureDatabaseCopy', 'Remove-Blobs', 'Copy-Blobs' )

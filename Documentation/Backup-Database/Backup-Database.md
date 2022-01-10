@@ -1,4 +1,4 @@
-# Invoke-AzureDatabaseBackup
+# Backup-Database
 Backup Azure Sql database and store BACPAC file in storage account container.
 
 ## Prerequisite
@@ -35,7 +35,7 @@ $SqlDatabasePassword = "kGxxXXXxxXzZcrw9qVXxxXxxxXXcpzX"
 $StorageAccountName = "" #Optional
 $StorageAccountContainer = "db-backups" #Optional
 
-Invoke-AzureDatabaseBackup -SubscriptionId $SubscriptionId -ResourceGroupName $ResourceGroupName -SqlServerName $SqlServerName -SqlDatabaseName $SqlDatabaseName -SqlDatabaseLogin $SqlDatabaseLogin -SqlDatabasePassword $SqlDatabasePassword -StorageAccountName $StorageAccountName -StorageAccountContainer $StorageAccountContainer
+Backup-Database -SubscriptionId $SubscriptionId -ResourceGroupName $ResourceGroupName -SqlServerName $SqlServerName -SqlDatabaseName $SqlDatabaseName -SqlDatabaseLogin $SqlDatabaseLogin -SqlDatabasePassword $SqlDatabasePassword -StorageAccountName $StorageAccountName -StorageAccountContainer $StorageAccountContainer
 ```
 ![PowerShell result](PsResult.jpg)  
 
