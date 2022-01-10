@@ -1,4 +1,4 @@
-# Invoke-AzureDatabaseCopy
+# Copy-Database
 Copy a database from one place to another. If the destination database exist it will be 'overwritten'. You can decide if you want to make a backup of the destination database before it is dropped.  
 
 ## Prerequisite
@@ -39,7 +39,7 @@ $DestinationSqlDatabasePassword = "kGxxXXXxxXzZcrw9qVXxxXxxxXXcpzX"
 $DestinationStorageAccount = ""
 $DestinationStorageAccountContainer = "db-backups"
 
-Invoke-AzureDatabaseCopy -SubscriptionId $SubscriptionId -SourceResourceGroupName $SourceResourceGroupName -SourceSqlServerName $SourceSqlServerName 
+Copy-Database -SubscriptionId $SubscriptionId -SourceResourceGroupName $SourceResourceGroupName -SourceSqlServerName $SourceSqlServerName 
     -SourceSqlDatabaseName $SourceSqlDatabaseName -DestinationResourceGroupName $DestinationResourceGroupName -DestinationSqlServerName $DestinationSqlServerName 
     -DestinationSqlDatabaseName $DestinationSqlDatabaseName -DestinationRunDatabaseBackup $DestinationRunDatabaseBackup 
     -DestinationSqlDatabaseLogin $DestinationSqlDatabaseLogin -DestinationSqlDatabasePassword $DestinationSqlDatabasePassword 

@@ -21,9 +21,9 @@ Create a database user for a specific database on a Azure SQL Server instance.
 Backup/Export a database and store BACPAC in storage account container.  
 [Documentation](Documentation/Backup-Database/Backup-Database.md)
 
-## Invoke-AzureDatabaseCopy
+## Copy-Database
 Copy a database from one place to another. If the destination database exist it will be 'overwritten'. You can decide if you want to make a backup of the destination database before it is dropped.  
-[Documentation](Documentation/Invoke-AzureDatabaseCopy/Invoke-AzureDatabaseCopy.md)
+[Documentation](Documentation/Copy-Database/Copy-Database.md)
 
 ## Remove-Blobs
 Remove all blobs from a StorageAccount container.  

@@ -911,7 +911,7 @@ function Backup-Database{
     }
 }
 
-function Invoke-AzureDatabaseCopy{
+function Copy-Database{
     <#
     .SYNOPSIS
         Copy a database from one place to another.
@@ -1221,4 +1221,4 @@ function Copy-Blobs{
     Write-Host "Copy-Blobs finished"
 }
 
-Export-ModuleMember -Function @( 'New-OptimizelyCmsResourceGroup', 'Get-OptimizelyCmsConnectionStrings', 'New-EpiserverCmsResourceGroup', 'Get-EpiserverCmsConnectionStrings', 'Add-AzureDatabaseUser', 'Backup-Database', 'Invoke-AzureDatabaseCopy', 'Remove-Blobs', 'Copy-Blobs' )
+Export-ModuleMember -Function @( 'New-OptimizelyCmsResourceGroup', 'Get-OptimizelyCmsConnectionStrings', 'New-EpiserverCmsResourceGroup', 'Get-EpiserverCmsConnectionStrings', 'Add-AzureDatabaseUser', 'Backup-Database', 'Copy-Database', 'Remove-Blobs', 'Copy-Blobs' )
