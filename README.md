@@ -29,6 +29,9 @@ Copy a database from one place to another. If the destination database exist it 
 Remove all blobs from a StorageAccount container.  
 [Documentation](Documentation/Remove-Blobs/Remove-Blobs.md)
 
+## Copy-Blobs
+Copy all blobs from a StorageAccount container to another.  
+[Documentation](Documentation/Copy-Blobs/Copy-Blobs.md)
 
 ## Old
 ## New-EpiserverCmsResourceGroup

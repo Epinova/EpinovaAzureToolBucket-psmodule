@@ -1123,10 +1123,10 @@ function Remove-Blobs{
         [string] $StorageAccountName,
 
         [Parameter(Mandatory = $true)]
-        [string] $ContainerName,
+        [string] $ContainerName#,
 
-        [Parameter(Mandatory = $true)]
-        [int] $MaxBlobToRemove
+        #[Parameter(Mandatory = $true)]
+        #[int] $MaxBlobToRemove
     )
 
     Connect-AzureSubscriptionAccount
@@ -1136,47 +1136,130 @@ function Remove-Blobs{
     Write-Host "ResourceGroupName:      $ResourceGroupName"
     Write-Host "StorageAccountName:     $StorageAccountName"
     Write-Host "ContainerName:          $ContainerName"
-    Write-Host "MaxBlobToRemove:        $MaxBlobToRemove (0=All)"
+    #Write-Host "MaxBlobToRemove:        $MaxBlobToRemove (0=All)"
     Write-Host "------------------------------------------------"
 
     $storageAccount = Get-AzStorageAccount -ResourceGroupName $ResourceGroupName -Name $StorageAccountName 
     $context = $storageAccount.Context 
+
+    (Get-AzStorageBlob -Container $ContainerName -Context $context | Sort-Object -Property LastModified -Descending) | Remove-AzStorageBlob
       
-    $blobContents = Get-AzStorageBlob -Container $ContainerName -Context $context | Sort-Object -Property LastModified -Descending
+    # $blobContents = Get-AzStorageBlob -Container $ContainerName -Context $context | Sort-Object -Property LastModified -Descending
     
-    Write-Host "Found $($blobContents.Length) BlobContent in container '$ContainerName'."
+    # Write-Host "Found $($blobContents.Length) BlobContent in container '$ContainerName'."
     
-    if ($blobContents.Length -eq 0) {
-        Write-Warning "No blob/files found in the container '$ContainerName'"
-        exit
-    }
+    # if ($blobContents.Length -eq 0) {
+    #     Write-Warning "No blob/files found in the container '$ContainerName'"
+    #     exit
+    # }
     
-    if ($MaxBlobToRemove -eq 0) {
-        $MaxBlobToRemove = [int]$blobContents.Length
-    }
-    $downloadedFiles = 0
-    Write-Host "---------------------------------------------------"
-    foreach($blobContent in $blobContents)  
-    {  
-        if ($downloadedFiles -ge $MaxBlobToRemove){
-            Write-Host "Hit max blobs to delete ($MaxBlobToRemove)"
-            break
-        }
+    # if ($MaxBlobToRemove -eq 0) {
+    #     $MaxBlobToRemove = [int]$blobContents.Length
+    # }
+    # $downloadedFiles = 0
+    # Write-Host "---------------------------------------------------"
+    # foreach($blobContent in $blobContents)  
+    # {  
+    #     if ($downloadedFiles -ge $MaxBlobToRemove){
+    #         Write-Host "Hit max blobs to delete ($MaxBlobToRemove)"
+    #         break
+    #     }
     
-        $filePath = Join-Parts -Separator '\' -Parts $downloadFolder, $blobContent.Name
-        $fileExist = Test-Path $filePath -PathType Leaf
+    #     $filePath = Join-Parts -Separator '\' -Parts $downloadFolder, $blobContent.Name
+    #     $fileExist = Test-Path $filePath -PathType Leaf
     
-        if ($fileExist -eq $false -or $true -eq $overwriteExistingFiles){
-            ## Delete blob content 
-            Write-Host "Delete #$($downloadedFiles + 1) - $($blobContent.Name)" 
-            Remove-AzStorageBlob -Container $ContainerName -Context $context -Blob $blobContent.Name -Force  
-            $downloadedFiles++
-        }
+    #     if ($fileExist -eq $false -or $true -eq $overwriteExistingFiles){
+    #         ## Delete blob content 
+    #         Write-Host "Delete #$($downloadedFiles + 1) - $($blobContent.Name)" 
+    #         Remove-AzStorageBlob -Container $ContainerName -Context $context -Blob $blobContent.Name -Force  
+    #         $downloadedFiles++
+    #     }
     
-        $procentage = [int](($downloadedFiles / $MaxBlobToRemove) * 100)
-        Write-Progress -Activity "Deleted files" -Status "$procentage% Complete:" -PercentComplete $procentage;
-    }
-    Write-Host "Remove-Blobs ending"
+    #     $procentage = [int](($downloadedFiles / $MaxBlobToRemove) * 100)
+    #     Write-Progress -Activity "Deleted files" -Status "$procentage% Complete:" -PercentComplete $procentage;
+    # }
+    Write-Host "Remove-Blobs finished"
 }
 
-Export-ModuleMember -Function @( 'New-OptimizelyCmsResourceGroup', 'Get-OptimizelyCmsConnectionStrings', 'New-EpiserverCmsResourceGroup', 'Get-EpiserverCmsConnectionStrings', 'Add-AzureDatabaseUser', 'Invoke-AzureDatabaseBackup', 'Invoke-AzureDatabaseCopy', 'Remove-Blobs' )
+function Copy-Blobs{
+    <#
+    .SYNOPSIS
+        Copy all blobs from a StorageAccount container to another.
+
+    .DESCRIPTION
+        Copy all blobs from a StorageAccount container to another.
+
+    .PARAMETER SubscriptionId
+        Your Azure SubscriptionId where we can find your blobs.
+
+    .PARAMETER SourceResourceGroupName
+        The resource group name where the blobs are that we want to copy.
+
+    .PARAMETER SourceStorageAccountName
+        The StorageAccount name where the blobs are that we want to copy.
+
+    .PARAMETER SourceContainerName
+        The container name where the blobs are that we want to copy.
+
+    .PARAMETER DestinationResourceGroupName
+        The destination group name where the blobs should be moved.
+
+    .PARAMETER DestinationStorageAccountName
+        The destination StorageAccount where the blobs should be moved.
+
+    .PARAMETER DestinationContainerName
+        The destination container name where the blobs should be moved.
+
+    .EXAMPLE
+        Copy-Blobs -SubscriptionId $SubscriptionId -SourceResourceGroupName $SourceResourceGroupName -SourceStorageAccountName $SourceStorageAccountName -SourceContainerName $SourceContainerName -DestinationResourceGroupName $DestinationResourceGroupName -DestinationStorageAccountName $DestinationStorageAccountName -DestinationContainerName $DestinationContainerName 
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [string] $SubscriptionId,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [string] $SourceResourceGroupName,
+
+        [Parameter(Mandatory = $true)]
+        [string] $SourceStorageAccountName,
+
+        [Parameter(Mandatory = $true)]
+        [string] $SourceContainerName,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [string] $DestinationResourceGroupName,
+
+        [Parameter(Mandatory = $true)]
+        [string] $DestinationStorageAccountName,
+
+        [Parameter(Mandatory = $true)]
+        [string] $DestinationContainerName
+    )
+
+    Connect-AzureSubscriptionAccount
+
+    Write-Host "Copy-Blobs - Inputs:----------------------------"
+    Write-Host "SubscriptionId:                 $SubscriptionId"
+    Write-Host "SourceResourceGroupName:        $SourceResourceGroupName"
+    Write-Host "SourceStorageAccountName:       $SourceStorageAccountName"
+    Write-Host "SourceContainerName:            $SourceContainerName"
+    Write-Host "DestinationResourceGroupName:   $DestinationResourceGroupName"
+    Write-Host "DestinationStorageAccountName:  $DestinationStorageAccountName"
+    Write-Host "DestinationContainerName:       $DestinationContainerName"
+    Write-Host "------------------------------------------------"
+
+    $sourceStorageAccount = Get-AzStorageAccount -ResourceGroupName $SourceResourceGroupName -Name $SourceStorageAccountName 
+    $sourceContext = $sourceStorageAccount.Context 
+
+    $destinationStorageAccount = Get-AzStorageAccount -ResourceGroupName $DestinationResourceGroupName -Name $DestinationStorageAccountName 
+    $destinationContext = $destinationStorageAccount.Context 
+
+    Get-AzStorageBlob -Container $SourceContainerName -Context $sourceContext | Start-AzStorageBlobCopy -DestContainer $DestinationContainerName  -Context $destinationContext
+    Write-Host "Copy-Blobs finished"
+}
+
+Export-ModuleMember -Function @( 'New-OptimizelyCmsResourceGroup', 'Get-OptimizelyCmsConnectionStrings', 'New-EpiserverCmsResourceGroup', 'Get-EpiserverCmsConnectionStrings', 'Add-AzureDatabaseUser', 'Invoke-AzureDatabaseBackup', 'Invoke-AzureDatabaseCopy', 'Remove-Blobs', 'Copy-Blobs' )

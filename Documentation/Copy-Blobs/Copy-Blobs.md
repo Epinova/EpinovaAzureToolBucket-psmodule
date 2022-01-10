@@ -1,5 +1,5 @@
-# Remove-Blobs
-Remove all blobs from a StorageAccount container.    
+# Copy-Blobs
+Copy all blobs from a StorageAccount container to another.  
 
 ## Prerequisite
 ### Nedded Azure services
@@ -27,11 +27,15 @@ Install-Module EpinovaAzureToolBucket -Scope CurrentUser -Force
 4.	Add the code below and make the changes needed to fit your context.
 ```powershell
 $SubscriptionId = "e8xxx180-9xxf-4xx4-axx7-3xxxffxx7fxx"
-$ResourceGroupName = "rg-ove-1231hjkjia-dev"
-$StorageAccountName = "stove1231hjkjiadev"
-$ContainerName = "mysitemedia"
+$SourceResourceGroupName = "rg-ove-1231hjkjia-dev"
+$SourceStorageAccountName = "stove1231hjkjiadev"
+$SourceContainerName = "mysitemedia"
 
-Remove-Blobs -SubscriptionId $SubscriptionId -ResourceGroupName $ResourceGroupName -StorageAccountName $StorageAccountName -ContainerName $ContainerName
+$DestinationResourceGroupName = "rg-ove-1231hjkjia-prep"
+$DestinationStorageAccountName = "stove1231hjkjiaprep"
+$DestinationContainerName = "mysitemedia"
+
+Copy-Blobs -SubscriptionId $SubscriptionId -SourceResourceGroupName $SourceResourceGroupName -SourceStorageAccountName $SourceStorageAccountName -SourceContainerName $SourceContainerName -DestinationResourceGroupName $DestinationResourceGroupName -DestinationStorageAccountName $DestinationStorageAccountName -DestinationContainerName $DestinationContainerName 
 ```
 ![PowerShell result](PsResult.jpg)  
 
