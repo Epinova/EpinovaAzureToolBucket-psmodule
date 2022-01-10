@@ -121,14 +121,6 @@ Import-Module -Name E:\dev\EpinovaAzureToolBucket-psmodule\Modules\EpinovaAzureT
 #         }
 #     }
     
-# $sqlServer = "project1-dev.database.windows.net"
-# $sqlServerUsername = "project1-sa"
-# $sqlServerPassword = "@wes0mep@ssw0rd"
-# $targetDatabase = "project1-cms-dev"
-# $newUsername = "project1dbuser"
-# $newPassword = "mynew@wes0mep@ssw0rd"
-# $newUserPermission = "db_owner"
-# Add-AzureDatabaseUser -SqlServer $sqlServer -SqlServerUsername $sqlServerUsername -SqlServerPassword $sqlServerPassword -TargetDatabase $targetDatabase -NewUsername $newUsername -NewPassword $newPassword  -NewUserPermission $newUserPermission
 $SubscriptionId = "e872f180-979f-4374-aff7-3bbcffcb7f89"
 $ResourceGroupName = "bwoffshore"
 $SqlServerName = "bwoffshore-sqlserver" #Optional
@@ -139,6 +131,17 @@ $StorageAccountName = "" #Optional
 $StorageAccountContainer = "db-backups" #Optional
 
 Invoke-AzureDatabaseBackup -SubscriptionId $SubscriptionId -ResourceGroupName $ResourceGroupName -SqlServerName $SqlServerName -SqlDatabaseName $SqlDatabaseName -SqlDatabaseLogin $SqlDatabaseLogin -SqlDatabasePassword $SqlDatabasePassword -StorageAccountName $StorageAccountName -StorageAccountContainer $StorageAccountContainer
+# $backupSplatt = @{
+#     SubscriptionId = "e872f180-979f-4374-aff7-3bbcffcb7f89"
+#     ResourceGroupName = "bwoffshore"
+#     SqlServerName = "bwoffshore-sqlserver"
+#     SqlDatabaseName = "dbBwoIntra_Copy"
+#     SqlDatabaseLogin = "epinova-sa"
+#     SqlDatabasePassword = "kGjQ6Y2ylOnVBzZcrw9qVRbKtvkcpzX"
+#     StorageAccountName = ""
+#     StorageAccountContainer = "db-backups"
+# }
+# Invoke-AzureDatabaseBackup $backupSplatt
 
 # Connect-AzureSubscriptionAccount
 

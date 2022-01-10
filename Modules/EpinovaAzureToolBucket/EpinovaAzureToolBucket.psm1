@@ -912,4 +912,175 @@ function Invoke-AzureDatabaseBackup{
     Write-Host "--- THE END ---"
 }
 
-Export-ModuleMember -Function @( 'New-OptimizelyCmsResourceGroup', 'Get-OptimizelyCmsConnectionStrings', 'New-EpiserverCmsResourceGroup', 'Get-EpiserverCmsConnectionStrings', 'Add-AzureDatabaseUser', 'Invoke-AzureDatabaseBackup' )
+function Invoke-AzureDatabaseCopy{
+    <#
+    .SYNOPSIS
+        Copy a database from one place to another.
+
+    .DESCRIPTION
+        Copy a database from one place to another. If the destination database exist it will be 'overwritten'. You can decide if you want to make a backup of the destination database before it is dropped.
+
+    .PARAMETER SubscriptionId
+        Your Azure SubscriptionId where the databases exist that you want to copy.
+
+    .PARAMETER SourceResourceGroupName
+        The resource group name where the source database exist that we want to copy.
+
+    .PARAMETER SourceSqlServerName
+        The Sql Server that contain the database that you want to copy. If empty we will try to find the first SqlServer resource in the specified source resource group.
+
+    .PARAMETER SourceSqlDatabaseName
+        Name of the database that should be copied.
+
+    .PARAMETER DestinationResourceGroupName
+        The resource group name where the destination database should be copied to.
+
+    .PARAMETER DestinationSqlServerName
+        The destination Sql server name. If empty we will try to find the first SqlServer resource in the specified destination resource group.
+
+    .PARAMETER DestinationSqlDatabaseName
+        The destination database name.
+
+    .PARAMETER DestinationRunDatabaseBackup
+        If the destination database exist and this param is true a backup of the database will be made first.
+
+    .PARAMETER DestinationSqlDatabaseLogin
+        Destination Sql server administrator username. Only needed if you want to make a backup of destination database.
+
+    .PARAMETER DestinationSqlDatabasePassword
+        Destination Sql server administrator password. Only needed if you want to make a backup of destination database.
+
+    .PARAMETER DestinationStorageAccountName
+        The StorageAccount that should hold the BACPAC file for backup. If empty we will try to find the first StorageAccount resource in the specified destination resource group.
+
+    .PARAMETER DestinationStorageAccountContainer
+        The StorageAccount container name that should hold the BACPAC file backup. If empty we will try to find the container with name "db-backups".
+
+    .EXAMPLE
+        Invoke-AzureDatabaseCopy -SubscriptionId $SubscriptionId -SourceResourceGroupName $SourceResourceGroupName -SourceSqlServerName $SourceSqlServerName -SourceSqlDatabaseName $SourceSqlDatabaseName -DestinationResourceGroupName $DestinationResourceGroupName -DestinationSqlServerName $DestinationSqlServerName -DestinationSqlDatabaseName $DestinationSqlDatabaseName -DestinationRunDatabaseBackup $DestinationRunDatabaseBackup 
+
+    .EXAMPLE
+        Invoke-AzureDatabaseCopy -SubscriptionId $SubscriptionId -SourceResourceGroupName $SourceResourceGroupName -SourceSqlServerName $SourceSqlServerName -SourceSqlDatabaseName $SourceSqlDatabaseName -DestinationResourceGroupName $DestinationResourceGroupName -DestinationSqlServerName $DestinationSqlServerName -DestinationSqlDatabaseName $DestinationSqlDatabaseName -DestinationRunDatabaseBackup $DestinationRunDatabaseBackup -DestinationSqlDatabaseLogin $DestinationSqlDatabaseLogin -DestinationSqlDatabasePassword $DestinationSqlDatabasePassword -DestinationStorageAccount $DestinationStorageAccount -DestinationStorageAccountContainer $DestinationStorageAccountContainer 
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [string] $SubscriptionId,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [string] $SourceResourceGroupName,
+
+        [Parameter(Mandatory = $false)]
+        [string] $SourceSqlServerName,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [string] $SourceSqlDatabaseName,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [string] $DestinationResourceGroupName,
+
+        [Parameter(Mandatory = $false)]
+        [string] $DestinationSqlServerName,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [string] $DestinationSqlDatabaseName,
+
+        [Parameter(Mandatory = $true)]
+        [bool] $DestinationRunDatabaseBackup,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [string] $DestinationSqlDatabaseLogin,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [string] $DestinationSqlDatabasePassword,
+
+        [Parameter(Mandatory = $false)]
+        [string] $DestinationStorageAccount,
+
+        [Parameter(Mandatory = $false)]
+        [string] $DestinationStorageAccountContainer
+    )
+
+    Connect-AzureSubscriptionAccount
+
+    if ($null -eq $SourceSqlServerName -or "" -eq $SourceSqlServerName) {
+        $SourceSqlServerName = Get-DefaultSqlServer -ResourceGroupName $SourceResourceGroupName
+    }
+    Write-Host "Found source SqlServer '$SourceSqlServerName'"
+
+    if ($null -eq $DestinationSqlServerName -or "" -eq $DestinationSqlServerName) {
+        $DestinationSqlServerName = Get-DefaultSqlServer -ResourceGroupName $DestinationSqlServerName
+    }
+    Write-Host "Found destination SqlServer '$DestinationSqlServerName'"
+
+    $destinationDatabaseExist = $false
+    $destinationDatabaseResult = Get-AzSqlDatabase -ResourceGroupName $DestinationResourceGroupName -ServerName $DestinationSqlServerName -DatabaseName $DestinationSqlDatabaseName
+    if ($null -ne $destinationDatabaseResult) {
+        $destinationDatabaseExist = $true
+        Write-Host "Destination database exist."
+    }
+
+    Write-Host "Invoke-AzureDatabaseCopy - Inputs:----------"
+    Write-Host "SubscriptionId:                     $SubscriptionId"
+    Write-Host "SourceResourceGroupName:            $SourceResourceGroupName"
+    Write-Host "SourceSqlServerName:                $SourceSqlServerName"
+    Write-Host "SourceSqlDatabaseName:              $SourceSqlDatabaseName"
+    Write-Host "DestinationResourceGroupName:       $DestinationResourceGroupName"
+    Write-Host "DestinationSqlServerName:           $DestinationSqlServerName"
+    Write-Host "DestinationSqlDatabaseName:         $DestinationSqlDatabaseName"
+    Write-Host "DestinationRunDatabaseBackup:       $DestinationRunDatabaseBackup"
+    Write-Host "DestinationSqlDatabaseLogin:        $DestinationSqlDatabaseLogin"
+    Write-Host "DestinationSqlDatabasePassword:     **** (it is a secret...)"
+    Write-Host "DestinationDatabaseExist:           $destinationDatabaseExist"
+    Write-Host "DestinationStorageAccount:          $DestinationStorageAccount"
+    Write-Host "DestinationStorageAccountContainer: $DestinationStorageAccountContainer"
+    Write-Host "------------------------------------------------"
+
+    if ($true -eq $destinationDatabaseExist -and $true -eq $DestinationRunDatabaseBackup) {
+        $missingParam = $false
+        if($null -eq $DestinationSqlDatabaseLogin -or "" -eq $DestinationSqlDatabaseLogin) {
+            Write-Warning "You want to make a destination database backup and missing the -DestinationSqlDatabaseLogin param."
+            $missingParam = $true
+        }
+        if($null -eq $DestinationSqlDatabasePassword -or "" -eq $DestinationSqlDatabasePassword) {
+            Write-Warning "You want to make a destination database backup and missing the DestinationSqlDatabasePassword param."
+            $missingParam = $true
+        }
+
+        if ($true -eq $missingParam) {
+            Write-Error "Parameters is missing."
+            exit
+        }
+
+        Invoke-AzureDatabaseBackup -SubscriptionId $SubscriptionId -ResourceGroupName $DestinationResourceGroupName -SqlServerName $DestinationSqlServerName -SqlDatabaseName $DestinationSqlDatabaseName -SqlDatabaseLogin $DestinationSqlDatabaseLogin -SqlDatabasePassword $DestinationSqlDatabasePassword -StorageAccountName $DestinationStorageAccount -StorageAccountContainer $DestinationStorageAccountContainer
+    }
+
+    # Drop destination database if exist
+    if ($true -eq $destinationDatabaseExist) {
+        Write-Host "Start droping destination database '$DestinationSqlDatabaseName'."
+        Remove-AzSqlDatabase -ResourceGroupName $DestinationResourceGroupName -ServerName $DestinationSqlServerName -DatabaseName $DestinationSqlDatabaseName
+        Write-Host "Droped destination database '$DestinationSqlDatabaseName'."
+    }
+
+    # Copy the source database to destination database
+    Set-Item Env:\SuppressAzurePowerShellBreakingChangeWarnings "true"
+    Write-Host "Start copying database '$SourceSqlDatabaseName' to '$DestinationSqlDatabaseName'."
+    $databaseCopy = New-AzSqlDatabaseCopy -ResourceGroupName $SourceResourceGroupName -ServerName $SourceSqlServerName -DatabaseName $SourceSqlDatabaseName -CopyResourceGroupName $DestinationResourceGroupName -CopyServerName $DestinationSqlServerName -CopyDatabaseName $DestinationSqlDatabaseName
+    #$databaseCopy
+    Write-Host "Database '$SourceSqlDatabaseName' is copied to '$DestinationSqlDatabaseName'."
+
+    # # Check the SKU on destination database after copy. 
+    # $destinationDatabaseResult = Get-AzSqlDatabase -ResourceGroupName $DestinationResourceGroupName -ServerName $DestinationSqlServerName -DatabaseName $DestinationSqlDatabaseName
+    # $destinationDatabaseResult
+
+    Write-Host "--- THE END ---"
+}
+
+Export-ModuleMember -Function @( 'New-OptimizelyCmsResourceGroup', 'Get-OptimizelyCmsConnectionStrings', 'New-EpiserverCmsResourceGroup', 'Get-EpiserverCmsConnectionStrings', 'Add-AzureDatabaseUser', 'Invoke-AzureDatabaseBackup', 'Invoke-AzureDatabaseCopy' )

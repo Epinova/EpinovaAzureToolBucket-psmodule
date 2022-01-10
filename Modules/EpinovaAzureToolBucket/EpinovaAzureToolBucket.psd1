@@ -7,7 +7,7 @@
     Copyright         = '(c) 2021 Epinova AB. All rights reserved.'
     Description       = 'Module contain help functions for the Azure Portal.'
     PowerShellVersion = '5.0'
-    FunctionsToExport = 'New-OptimizelyCmsResourceGroup', 'Get-OptimizelyCmsConnectionStrings', 'New-EpiserverCmsResourceGroup', 'Get-EpiserverCmsConnectionStrings', 'Add-AzureDatabaseUser', 'Invoke-AzureDatabaseBackup'
+    FunctionsToExport = 'New-OptimizelyCmsResourceGroup', 'Get-OptimizelyCmsConnectionStrings', 'New-EpiserverCmsResourceGroup', 'Get-EpiserverCmsConnectionStrings', 'Add-AzureDatabaseUser', 'Invoke-AzureDatabaseBackup', 'Invoke-AzureDatabaseCopy'
     CmdletsToExport   = @()
     AliasesToExport   = @()
 }

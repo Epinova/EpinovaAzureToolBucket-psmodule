@@ -17,10 +17,13 @@ Get and print the connection strings for specified resource group.
 Create a database user for a specific database on a Azure SQL Server instance.  
 [Documentation](Documentation/Add-AzureDatabaseUser/Add-AzureDatabaseUser.md)
 
-## Invoke-AzureDatabaseExport
-Backup a database and store in storage account container.  
-[Documentation](Documentation/Invoke-AzureDatabaseExport/Invoke-AzureDatabaseExport.md)
+## Invoke-AzureDatabaseBackup
+Backup/Export a database and store BACPAC in storage account container.  
+[Documentation](Documentation/Invoke-AzureDatabaseBackup/Invoke-AzureDatabaseBackup.md)
 
+## Invoke-AzureDatabaseCopy
+Copy a database from one place to another. If the destination database exist it will be 'overwritten'. You can decide if you want to make a backup of the destination database before it is dropped.  
+[Documentation](Documentation/Invoke-AzureDatabaseCopy/Invoke-AzureDatabaseCopy.md)
 
 ## Old
 ## New-EpiserverCmsResourceGroup
