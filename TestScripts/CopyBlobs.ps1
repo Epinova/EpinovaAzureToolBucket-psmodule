@@ -2,14 +2,17 @@ Remove-Module -Name "EpinovaAzureToolBucket" -Verbose
 #Remove-Module -Name "Az" -Verbose
 Import-Module -Name E:\dev\EpinovaAzureToolBucket-psmodule\Modules\EpinovaAzureToolBucket -Verbose
 
-$SubscriptionId = "e872f180-979f-4374-aff7-3bbcffcb7f89"
-$SourceResourceGroupName = "bwoffshoreintra"
-$SourceStorageAccountName = "bwoffshoreintra"
-$SourceContainerName = "mysitemedia"
+$SubscriptionId = "x802f980-979x-1111-axx7-3bbxxfcb7x99"
+$SourceResourceGroupName = "rg-sprit-1231hjkjia-prod"
+$SourceStorageAccountName = "stsprit1231hjkjiaprod"
+$SourceContainerName = "sitemedia"
 
-$DestinationResourceGroupName = "bwoffshore"
-$DestinationStorageAccountName = "bwoffshore"
-$DestinationContainerName = "mysitemedia-intra"
+$DestinationResourceGroupName = "rg-sprit-1231hjkjia-inte"
+$DestinationStorageAccountName = "stsprit1231hjkjiainte"
+$DestinationContainerName = "sitemedia"
+
+# Override with real settings
+. E:\dev\temp\PowerShellSettingFiles\EpinovaAzureToolBucket_CopyBlobs.ps1
 
 Copy-Blobs -SubscriptionId $SubscriptionId -SourceResourceGroupName $SourceResourceGroupName -SourceStorageAccountName $SourceStorageAccountName -SourceContainerName $SourceContainerName -DestinationResourceGroupName $DestinationResourceGroupName -DestinationStorageAccountName $DestinationStorageAccountName -DestinationContainerName $DestinationContainerName 
 

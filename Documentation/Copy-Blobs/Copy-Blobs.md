@@ -37,7 +37,6 @@ $DestinationContainerName = "mysitemedia"
 
 Copy-Blobs -SubscriptionId $SubscriptionId -SourceResourceGroupName $SourceResourceGroupName -SourceStorageAccountName $SourceStorageAccountName -SourceContainerName $SourceContainerName -DestinationResourceGroupName $DestinationResourceGroupName -DestinationStorageAccountName $DestinationStorageAccountName -DestinationContainerName $DestinationContainerName 
 ```
-![PowerShell result](PsResult.jpg)  
 
 
 [<< Back](/README.md)

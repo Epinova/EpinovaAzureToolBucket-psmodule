@@ -33,7 +33,6 @@ $ContainerName = "mysitemedia"
 
 Remove-Blobs -SubscriptionId $SubscriptionId -ResourceGroupName $ResourceGroupName -StorageAccountName $StorageAccountName -ContainerName $ContainerName
 ```
-![PowerShell result](PsResult.jpg)  
 
 
 [<< Back](/README.md)

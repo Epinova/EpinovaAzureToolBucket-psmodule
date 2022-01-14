@@ -18,5 +18,7 @@ $SubscriptionId = ""
 $ResourceGroupName = "deletemenow1235"
 $DatabasePassword = ""
 
+# Override with real settings
+. E:\dev\temp\PowerShellSettingFiles\EpinovaAzureToolBucket_NewOptimizelyCmsResourceGroup.ps1
 
 New-OptimizelyCmsResourceGroup -SubscriptionId $SubscriptionId -ResourceGroupName $ResourceGroupName -DatabasePassword $DatabasePassword -Tags $Tags #-ArmTemplateUri ‘https://raw.githubusercontent.com/yourrepository/arm-templates/main/azure-optimizely-cms.json’

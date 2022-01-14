@@ -6,4 +6,7 @@ $SubscriptionId = ""
 $ResourceGroupName = "deletemenow1235"
 $DatabasePassword = ""
 
+# Override with real settings
+. E:\dev\temp\PowerShellSettingFiles\EpinovaAzureToolBucket_GetOptimizelyCmsConnectionStrings.ps1
+
 Get-OptimizelyCmsConnectionStrings -SubscriptionId $SubscriptionId -ResourceGroupName $ResourceGroupName -DatabasePassword $DatabasePassword

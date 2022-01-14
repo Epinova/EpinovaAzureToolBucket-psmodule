@@ -37,7 +37,5 @@ $StorageAccountContainer = "db-backups" #Optional
 
 Backup-Database -SubscriptionId $SubscriptionId -ResourceGroupName $ResourceGroupName -SqlServerName $SqlServerName -SqlDatabaseName $SqlDatabaseName -SqlDatabaseLogin $SqlDatabaseLogin -SqlDatabasePassword $SqlDatabasePassword -StorageAccountName $StorageAccountName -StorageAccountContainer $StorageAccountContainer
 ```
-![PowerShell result](PsResult.jpg)  
-
 
 [<< Back](/README.md)

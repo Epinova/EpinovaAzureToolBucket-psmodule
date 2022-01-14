@@ -45,7 +45,6 @@ Copy-Database -SubscriptionId $SubscriptionId -SourceResourceGroupName $SourceRe
     -DestinationSqlDatabaseLogin $DestinationSqlDatabaseLogin -DestinationSqlDatabasePassword $DestinationSqlDatabasePassword 
     -DestinationStorageAccount $DestinationStorageAccount -DestinationStorageAccountContainer $DestinationStorageAccountContainer 
 ```
-![PowerShell result](PsResult.jpg)  
 
 
 [<< Back](/README.md)
