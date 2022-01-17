@@ -18,5 +18,7 @@ $SubscriptionId = ""
 $ResourceGroupName = "deletemenow1235"
 $DatabasePassword = ""
 
+# Override with real settings
+. E:\dev\temp\PowerShellSettingFiles\EpinovaAzureToolBucket_NewEpiserverCmsResourceGroup.ps1
 
 New-EpiserverCmsResourceGroup -SubscriptionId $SubscriptionId -ResourceGroupName $ResourceGroupName -DatabasePassword $DatabasePassword -Tags $Tags

@@ -9,4 +9,8 @@ $targetDatabase = "project1-cms-dev"
 $newUsername = "project1dbuser"
 $newPassword = "mynew@wes0mep@ssw0rd"
 $newUserPermission = "db_owner"
+
+# Override with real settings
+. E:\dev\temp\PowerShellSettingFiles\EpinovaAzureToolBucket_AddAzureDatabaseUser.ps1
+
 Add-AzureDatabaseUser -SqlServer $sqlServer -SqlServerUsername $sqlServerUsername -SqlServerPassword $sqlServerPassword -TargetDatabase $targetDatabase -NewUsername $newUsername -NewPassword $newPassword  -NewUserPermission $newUserPermission

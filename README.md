@@ -17,6 +17,22 @@ Get and print the connection strings for specified resource group.
 Create a database user for a specific database on a Azure SQL Server instance.  
 [Documentation](Documentation/Add-AzureDatabaseUser/Add-AzureDatabaseUser.md)
 
+## Backup-Database
+Backup/Export a database and store BACPAC in storage account container.  
+[Documentation](Documentation/Backup-Database/Backup-Database.md)
+
+## Copy-Database
+Copy a database from one place to another. If the destination database exist it will be 'overwritten'. You can decide if you want to make a backup of the destination database before it is dropped.  
+[Documentation](Documentation/Copy-Database/Copy-Database.md)
+
+## Remove-Blobs
+Remove all blobs from a StorageAccount container.  
+[Documentation](Documentation/Remove-Blobs/Remove-Blobs.md)
+
+## Copy-Blobs
+Copy all blobs from a StorageAccount container to another.  
+[Documentation](Documentation/Copy-Blobs/Copy-Blobs.md)
+
 ## Old
 ## New-EpiserverCmsResourceGroup
 Create a Episerver CMS resource group in Azure.  
