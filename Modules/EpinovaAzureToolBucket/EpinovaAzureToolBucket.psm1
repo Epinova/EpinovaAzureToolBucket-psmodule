@@ -221,20 +221,6 @@ function Connect-AzureSubscriptionAccount{
     }
 }
 
-function Connect-AzureSubscriptionAccountUseDeviceAuthentication{
-    if($null -eq $azureConnection -or $null -eq $azureConnection.Account){
-        try{
-            $azureConnection = Connect-AzAccount -UseDeviceAuthentication
-            Write-Host "Connected -UseDeviceAuthentication"
-        }
-        catch {
-            $message = $_.Exception.message
-            Write-Error $message
-            exit
-        }
-    }
-}
-
 # END PRIVATE METHODS
 function New-OptimizelyCmsResourceGroup{
     <#
@@ -977,7 +963,8 @@ function Copy-Database{
     #>
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory = $false)]
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
         [string] $SubscriptionId,
 
         [Parameter(Mandatory = $true)]
@@ -1018,12 +1005,7 @@ function Copy-Database{
         [string] $DestinationStorageAccountContainer
     )
 
-    if ($null -eq $SubscriptionId -or $SubscriptionId.Length -eq 0) {
-        Connect-AzureSubscriptionAccountUseDeviceAuthentication
-    } else {
-        Connect-AzureSubscriptionAccount
-    }
-    
+    Connect-AzureSubscriptionAccount
 
     if ($null -eq $SourceSqlServerName -or "" -eq $SourceSqlServerName) {
         $SourceSqlServerName = Get-DefaultSqlServer -ResourceGroupName $SourceResourceGroupName

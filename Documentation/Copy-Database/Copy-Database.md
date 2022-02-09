@@ -46,7 +46,4 @@ Copy-Database -SubscriptionId $SubscriptionId -SourceResourceGroupName $SourceRe
     -DestinationStorageAccount $DestinationStorageAccount -DestinationStorageAccountContainer $DestinationStorageAccountContainer 
 ```
 
-## Tips and Trix
-If you don´t specify -SubscriptionId, script will try to login with 'Connect-AzAccount -UseDeviceAuthentication'.
-
 [<< Back](/README.md)
