@@ -7,8 +7,9 @@ Note: This is a very early stage and has only been tested on Epinovas Azure port
 ## New-OptimizelyCmsResourceGroup
 Create a Optimizely CMS resource group in Azure.  
 [Documentation](Documentation/New-OptimizelyCmsResourceGroup/New-OptimizelyCmsResourceGroup.md)
-
-
+  
+## New-OptimizelyCmsResourceGroupBicep  
+  
 ## Get-OptimizelyCmsConnectionStrings
 Get and print the connection strings for specified resource group.  
 [Documentation](Documentation/Get-OptimizelyCmsConnectionStrings/Get-OptimizelyCmsConnectionStrings.md)
