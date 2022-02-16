@@ -1018,10 +1018,17 @@ function Copy-Database{
     Write-Host "Found destination SqlServer '$DestinationSqlServerName'"
 
     $destinationDatabaseExist = $false
-    $destinationDatabaseResult = Get-AzSqlDatabase -ResourceGroupName $DestinationResourceGroupName -ServerName $DestinationSqlServerName -DatabaseName $DestinationSqlDatabaseName
-    if ($null -ne $destinationDatabaseResult) {
-        $destinationDatabaseExist = $true
-        Write-Host "Destination database exist."
+    try {
+        $destinationDatabaseResult = Get-AzSqlDatabase -ResourceGroupName $DestinationResourceGroupName -ServerName $DestinationSqlServerName -DatabaseName $DestinationSqlDatabaseName -ErrorAction SilentlyContinue
+        if ($null -ne $destinationDatabaseResult) {
+            $destinationDatabaseExist = $true
+            Write-Host "Destination database $DestinationSqlDatabaseName exist."
+        } else {
+            Write-Host "Destination database $DestinationSqlDatabaseName does not exist."
+        }
+    } catch {
+        Write-Host "Destination database $DestinationSqlDatabaseName does not exist."
+        $error.clear()
     }
 
     Write-Host "Invoke-AzureDatabaseCopy - Inputs:----------"
