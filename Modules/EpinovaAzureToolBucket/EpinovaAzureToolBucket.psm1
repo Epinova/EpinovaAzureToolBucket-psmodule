@@ -1328,4 +1328,63 @@ function Copy-Blobs{
     Write-Host "Copy-Blobs finished"
 }
 
-Export-ModuleMember -Function @( 'New-OptimizelyCmsResourceGroup', 'New-OptimizelyCmsResourceGroupBicep', 'Get-OptimizelyCmsConnectionStrings', 'New-EpiserverCmsResourceGroup', 'Get-EpiserverCmsConnectionStrings', 'Add-AzureDatabaseUser', 'Backup-Database', 'Copy-Database', 'Remove-Blobs', 'Copy-Blobs' )
+function New-AzureDevOpsProject{
+    <#
+    .SYNOPSIS
+        Create a project in Azure DevOps.
+
+    .DESCRIPTION
+        Create a project in Azure DevOps.
+        Git repo, scrum process, visibility private
+
+    .PARAMETER OrganizationName
+        The name of the organization where the new project should be created. Ex if the URL to your Azure DevOps is https://dev.azure.com/your-company. The the OrganisationName is 'your-company'
+
+    .PARAMETER ProjectName
+        The name of the project that should be created.
+
+    .PARAMETER ProjectDescription
+        The description of the project.
+
+    .EXAMPLE
+        New-AzureDevOpsProject -OrganizationName $OrganizationName -ProjectName $ProjectName -ProjectDescription $ProjectDescription
+
+    .EXAMPLE
+        New-AzureDevOpsProject -OrganizationName "your-company" -ProjectName "MyCoolProject" -ProjectDescription "Cool project contains cool code..."
+
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [string] $OrganizationName,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [string] $ProjectName,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [string] $ProjectDescription
+
+    )
+
+    Write-Host "New-AzureDevOpsProject - Inputs:----------"
+    Write-Host "OrganizationName:    $OrganizationName"
+    Write-Host "ProjectName:         $ProjectName"
+    Write-Host "ProjectDescription:  $ProjectDescription"
+    Write-Host "-----------------------------------------"
+
+    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+
+    $organizationId = "https://dev.azure.com/$OrganizationName"
+    # az devops project list --org $organizationId --output table
+
+    az devops project create --name $ProjectName --description $ProjectDescription --org $organizationId --process Scrum --source-control git --visibility private --verbose
+
+    az devops project list --org $organizationId --output table
+
+    Write-Host "--- THE END ---"
+}
+
+Export-ModuleMember -Function @( 'New-OptimizelyCmsResourceGroup', 'New-OptimizelyCmsResourceGroupBicep', 'Get-OptimizelyCmsConnectionStrings', 'New-EpiserverCmsResourceGroup', 'Get-EpiserverCmsConnectionStrings', 'Add-AzureDatabaseUser', 'Backup-Database', 'Copy-Database', 'Remove-Blobs', 'Copy-Blobs', 'New-AzureDevOpsProject' )
