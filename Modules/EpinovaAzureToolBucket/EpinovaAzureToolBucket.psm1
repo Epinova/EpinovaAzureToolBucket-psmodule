@@ -1375,14 +1375,15 @@ function New-AzureDevOpsProject{
     Write-Host "ProjectDescription:  $ProjectDescription"
     Write-Host "-----------------------------------------"
 
-    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+    az --version
+
+    az login
 
     $organizationId = "https://dev.azure.com/$OrganizationName"
-    # az devops project list --org $organizationId --output table
 
     az devops project create --name $ProjectName --description $ProjectDescription --org $organizationId --process Scrum --source-control git --visibility private --verbose
 
-    az devops project list --org $organizationId --output table
+    az devops project show --org $organizationId --project $ProjectName
 
     Write-Host "--- THE END ---"
 }

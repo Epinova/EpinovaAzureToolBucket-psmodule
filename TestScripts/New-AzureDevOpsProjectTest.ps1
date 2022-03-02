@@ -6,4 +6,4 @@ $OrganizationName = "Epinova-Sweden"
 $ProjectName = "myNewProject"
 $ProjectDescription = "This is my new project"
 
-New-AzureDevOpsProject -OrganizationName $OrganizationName -ProjectName $ProjectName -ProjectDescription $ProjectDescription
+New-AzureDevOpsProject -OrganizationName $OrganizationName -ProjectName $ProjectName -ProjectDescription $ProjectDescription -Verbose
