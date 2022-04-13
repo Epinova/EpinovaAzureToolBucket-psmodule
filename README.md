@@ -9,7 +9,9 @@ Create a Optimizely CMS resource group in Azure.
 [Documentation](Documentation/New-OptimizelyCmsResourceGroup/New-OptimizelyCmsResourceGroup.md)
   
 ## New-OptimizelyCmsResourceGroupBicep  
-  
+Create a Optimizely CMS resource group in Azure using a bicep file. Support Optimizely CMS v11 and v12.  
+[Documentation](Documentation/New-OptimizelyCmsResourceGroupBicep/New-OptimizelyCmsResourceGroupBicep.md)  
+
 ## Get-OptimizelyCmsConnectionStrings
 Get and print the connection strings for specified resource group.  
 [Documentation](Documentation/Get-OptimizelyCmsConnectionStrings/Get-OptimizelyCmsConnectionStrings.md)
