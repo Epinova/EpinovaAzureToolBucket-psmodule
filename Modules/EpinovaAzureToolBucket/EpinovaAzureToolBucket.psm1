@@ -353,8 +353,15 @@ function New-OptimizelyCmsResourceGroupBicep {
         Your Azure SubscriptionId that you want to create the new resource group in.
     .PARAMETER ResourceGroupName
         The client secret used to access the project.
+    .PARAMETER Environment
+        The type of environment that you want to create. Please select one of the following: inte|prep|prod
+    .PARAMETER DatabaseLogin
+        The username of database login object.
     .PARAMETER DatabasePassword
         The password to your database that will be generated. You need to follow the password policy. More information: https://docs.microsoft.com/en-us/previous-versions/azure/jj943764(v=azure.100)?redirectedfrom=MSDN
+    .PARAMETER CmsVersion
+        The CMS version that you want to run on the resource group. Please select one of the following: 11|12
+        If 11 is selected a "windows" like webapp is created. If 12 it will be a Linux.
     .PARAMETER Tags
         The tags that will be set on the resource group when it is created. 
         Ex: $resourceGroupTags = @{
@@ -370,12 +377,12 @@ function New-OptimizelyCmsResourceGroupBicep {
         }
     .PARAMETER Location
         The location where the resource group should be hosted. Default = "westeurope". You can get a complete list of location by using "Get-AzureRmLocation |Format-Table".
-    .PARAMETER ArmTemplateUri
-        The location where we can find your custom ARM template to use in this script. Default = https://raw.githubusercontent.com/Epinova/EpinovaAzureToolBucket-psmodule/main/ArmTemplates/epinova-azure-basic-optimizely-cms.json
+    .PARAMETER UseApplicationInsight
+        If ApplicationInsight should be setup in the resource group or not.
     .EXAMPLE
-        New-OptimizelyCmsResourceGroup -SubscriptionId $SubscriptionId -ResourceGroupName $ResourceGroupName -DatabasePassword $DatabasePassword -Tags $Tags
+        New-OptimizelyCmsResourceGroupBicep -SubscriptionId $SubscriptionId -ResourceGroupName $ResourceGroupName -DatabasePassword $DatabasePassword -Tags $Tags
     .EXAMPLE
-        New-OptimizelyCmsResourceGroup -SubscriptionId '95a9fd36-7851-4918-b8c9-f146a219982c' -ResourceGroupName 'mycoolwebsite' -DatabasePassword 'KXIN_rhxh3holt_s8it' -Tags @{ "Environment"="dev";"Owner"="ove.lartelius@epinova.se";"App"="Optimizely";"Client"="Client name";"Project"="Project name";"ManagedBy"="Ove Lartelius";"Cost"="Internal";"Department"="IT";"Expires"="";  } -Location = "westeurope" -ArmTemplateUri = "https://raw.githubusercontent.com/yourrepository/arm-templates/main/azure-optimizely-cms.json" 
+        New-OptimizelyCmsResourceGroupBicep -SubscriptionId '95a9fd36-7851-4918-b8c9-f146a219982c' -ResourceGroupName 'mycoolwebsite' -DatabasePassword 'KXIN_rhxh3holt_s8it' -Tags @{ "Environment"="dev";"Owner"="ove.lartelius@epinova.se";"App"="Optimizely";"Client"="Client name";"Project"="Project name";"ManagedBy"="Ove Lartelius";"Cost"="Internal";"Department"="IT";"Expires"="";  } -Location = "westeurope" -ArmTemplateUri = "https://raw.githubusercontent.com/yourrepository/arm-templates/main/azure-optimizely-cms.json" 
     #>
     [CmdletBinding()]
     param(
@@ -385,7 +392,7 @@ function New-OptimizelyCmsResourceGroupBicep {
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
-        [string] $Name,
+        [string] $ResourceGroupName,
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
@@ -408,7 +415,10 @@ function New-OptimizelyCmsResourceGroupBicep {
         [hashtable] $Tags,
 
         [Parameter(Mandatory = $false)]
-        [string] $Location = "westeurope"
+        [string] $Location = "westeurope",
+
+        [Parameter(Mandatory = $false)]
+        [bool] $UseApplicationInsight = $false
     )
 
     $TagsString = $Tags | Out-String
@@ -417,13 +427,14 @@ function New-OptimizelyCmsResourceGroupBicep {
 
     Write-Host "New-OptimizelyCmsResourceGroup - Inputs:----------"
     Write-Host "SubscriptionId:                  $SubscriptionId"
-    Write-Host "Name:                            $Name"
+    Write-Host "ResourceGroupName:               $ResourceGroupName"
     Write-Host "Environment:                     $Environment"
     Write-Host "DatabaseLogin:                   $DatabaseLogin"
     Write-Host "DatabasePassword:                $databasePasswordSecureString"
     Write-Host "Location:                        $Location"
     Write-Host "CmsVersion:                      $CmsVersion"
     Write-Host "Tags:                            $TagsString"
+    Write-Host "UseApplicationInsight:           $UseApplicationInsight"
     Write-Host "------------------------------------------------"
 
 
@@ -433,16 +444,19 @@ function New-OptimizelyCmsResourceGroupBicep {
     Connect-AzAccount -SubscriptionId $SubscriptionId
 
     $Parameters = @{
-        "projectName"                 = $Name
+        "projectName"                 = $ResourceGroupName
         "environmentName"             = $Environment
         "sqlserverAdminLogin"         = $DatabaseLogin
-        "sqlserverAdminLoginPassword" = $DatabasePassword
-        "useApplicationInsight"       = $true
+        "sqlserverAdminLoginPassword" = $databasePasswordSecureString #$DatabasePassword
+        "useApplicationInsight"       = $UseApplicationInsight
         "tags"                        = $Tags
     };
 
+    $bicepFile = "$PSScriptRoot\cms$CmsVersion.bicep"
+    Write-Host "Use bicep: $bicepFile"
+
     # Create resources from deployment template
-    New-AzDeployment -Location $Location -TemplateFile "$PSScriptRoot\cms$CmsVersion.bicep" -TemplateParameterObject $Parameters
+    New-AzDeployment -Location $Location -TemplateFile $bicepFile -TemplateParameterObject $Parameters
 }
 
 function Get-OptimizelyCmsConnectionStrings{
