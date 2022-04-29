@@ -380,9 +380,7 @@ function New-OptimizelyCmsResourceGroupBicep {
     .PARAMETER UseApplicationInsight
         If ApplicationInsight should be setup in the resource group or not.
     .EXAMPLE
-        New-OptimizelyCmsResourceGroupBicep -SubscriptionId $SubscriptionId -ResourceGroupName $ResourceGroupName -DatabasePassword $DatabasePassword -Tags $Tags
-    .EXAMPLE
-        New-OptimizelyCmsResourceGroupBicep -SubscriptionId '95a9fd36-7851-4918-b8c9-f146a219982c' -ResourceGroupName 'mycoolwebsite' -DatabasePassword 'KXIN_rhxh3holt_s8it' -Tags @{ "Environment"="dev";"Owner"="ove.lartelius@epinova.se";"App"="Optimizely";"Client"="Client name";"Project"="Project name";"ManagedBy"="Ove Lartelius";"Cost"="Internal";"Department"="IT";"Expires"="";  } -Location = "westeurope" -ArmTemplateUri = "https://raw.githubusercontent.com/yourrepository/arm-templates/main/azure-optimizely-cms.json" 
+        New-OptimizelyCmsResourceGroupBicep -SubscriptionId '95a9fd36-7851-4918-b8c9-f146a219982c' -ResourceGroupName 'mycoolwebsite' -Environment "inte" -DatabaseLogin "databasedbuser" -DatabasePassword 'KXIN_rhxh3holt_s8it' -CmsVersion "12" -Tags @{ "Environment"="dev";"Owner"="ove.lartelius@epinova.se";"App"="Optimizely";"Client"="Client name";"Project"="Project name";"ManagedBy"="Ove Lartelius";"Cost"="Internal";"Department"="IT";"Expires"="";  } -Location = "westeurope" -UseApplicationInsight $true 
     #>
     [CmdletBinding()]
     param(
@@ -418,14 +416,18 @@ function New-OptimizelyCmsResourceGroupBicep {
         [string] $Location = "westeurope",
 
         [Parameter(Mandatory = $false)]
-        [bool] $UseApplicationInsight = $false
+        [bool] $UseApplicationInsight = $false,
+
+        [Parameter(Mandatory = $false)]
+        [bool] $UseDeviceAuthentication = $false
+
     )
 
     $TagsString = $Tags | Out-String
     
     $databasePasswordSecureString = ConvertTo-SecureString $DatabasePassword -AsPlainText -Force | Out-String
 
-    Write-Host "New-OptimizelyCmsResourceGroup - Inputs:----------"
+    Write-Host "New-OptimizelyCmsResourceGroupBicep - Inputs:----------"
     Write-Host "SubscriptionId:                  $SubscriptionId"
     Write-Host "ResourceGroupName:               $ResourceGroupName"
     Write-Host "Environment:                     $Environment"
@@ -441,7 +443,12 @@ function New-OptimizelyCmsResourceGroupBicep {
     ##############################################################
 
     # Login to Azure
-    Connect-AzAccount -SubscriptionId $SubscriptionId
+    if ($UseDeviceAuthentication) {
+        Connect-AzAccount -SubscriptionId $SubscriptionId -UseDeviceAuthentication
+    } else {
+        Connect-AzAccount -SubscriptionId $SubscriptionId
+    }
+    
 
     $Parameters = @{
         "projectName"                 = $ResourceGroupName
