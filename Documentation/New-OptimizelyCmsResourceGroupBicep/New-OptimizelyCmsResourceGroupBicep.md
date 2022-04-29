@@ -48,6 +48,9 @@ The location where the resource group should be hosted. Default = "westeurope". 
 ### UseApplicationInsight
 If ApplicationInsight should be setup in the resource group or not.
 
+### UseDeviceAuthentication
+If the Azure connection should be made with device authentication. Used when execute from ex Azure DevOps.
+
 ## Examples
 ### Example 1
 ```powershell
@@ -69,7 +72,8 @@ $Tags = @{
     "Expires"="2030-01-01";
     }
 $Location = "westeurope"
-New-OptimizelyCmsResourceGroupBicep -SubscriptionId $SubscriptionId -ResourceGroupName $ResourceGroupName -Environment $Environment -DatabaseLogin $DatabaseLogin -DatabasePassword $DatabasePassword -Tags $Tags -CmsVersion $CmsVersion -Location $Location
+$UseApplicationInsight = $true
+New-OptimizelyCmsResourceGroupBicep -SubscriptionId $SubscriptionId -ResourceGroupName $ResourceGroupName -Environment $Environment -DatabaseLogin $DatabaseLogin -DatabasePassword $DatabasePassword -Tags $Tags -CmsVersion $CmsVersion -Location $Location -UseApplicationInsight $UseApplicationInsight
 ```
 
 ### Example 2
@@ -85,12 +89,7 @@ $Tags = @{
     "Department"="IT";
     "Expires"="2030-01-01";
     }
-New-OptimizelyCmsResourceGroup -SubscriptionId '95a9fd36-7851-4918-b8c9-f146a219982c' -ResourceGroupName 'mycoolwebsite' -DatabasePassword 'KXIN_rhxh3holt_s8it' -Tags $resourceGroupTags -ResourceGroupLocation = "westeurope" -ArmTemplateUri = "https://raw.githubusercontent.com/yourrepository/arm-templates/main/azure-optimizely-cms.json" 
-```
-
-### Example 3
-```powershell
-New-OptimizelyCmsResourceGroup -SubscriptionId '95a9fd36-7851-4918-b8c9-f146a219982c' -ResourceGroupName 'mycoolwebsite' -DatabasePassword 'KXIN_rhxh3holt_s8it' -Tags @{ "Environment"="dev";"Owner"="ove.lartelius@epinova.se";"App"="Episerver";"Client"="Client name";"Project"="Project name";"ManagedBy"="Ove Lartelius";"Cost"="Internal";"Department"="IT";"Expires"="";  } -ResourceGroupLocation = "westeurope" -ArmTemplateUri = "https://raw.githubusercontent.com/yourrepository/arm-templates/main/azure-optimizely-cms.json" 
+New-OptimizelyCmsResourceGroupBicep -SubscriptionId '95a9fd36-7851-4918-b8c9-f146a219982c' -ResourceGroupName 'mycoolwebsite' -Environment 'inte' -DatabaseLogin 'somelogin' -DatabasePassword 'KXIN_rhxh3holt_s8it' -Tags $Tags -CmsVersion '11' -Location 'westeurope' -UseApplicationInsight $true -UseDeviceAuthentication $true 
 ```
 
 [<< Back](/README.md)
