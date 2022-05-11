@@ -26,4 +26,5 @@ $Location = "westeurope"
 # Override with real settings
 . E:\dev\temp\PowerShellSettingFiles\EpinovaAzureToolBucket_NewOptimizelyCmsResourceGroupBicep.ps1
 
-New-OptimizelyCmsResourceGroupBicep -SubscriptionId $SubscriptionId -ResourceGroupName $ResourceGroupName -Environment $Environment -DatabaseLogin $DatabaseLogin -DatabasePassword $DatabasePassword -Tags $Tags -CmsVersion $CmsVersion -Location $Location
+#New-OptimizelyCmsResourceGroupBicep -SubscriptionId $SubscriptionId -ResourceGroupName $ResourceGroupName -Environment $Environment -DatabaseLogin $DatabaseLogin -DatabasePassword $DatabasePassword -Tags $Tags -CmsVersion $CmsVersion -Location $Location
+New-OptimizelyCmsResourceGroupBicep -SubscriptionId 'cd828bde-d193-4fdb-b3ef-929ab15e4ec9' -ResourceGroupName 'test' -Environment 'inte' -DatabaseLogin 'testdbuser' -DatabasePassword 'KXIN_rhxh3holt_s8it' -CmsVersion '11' -Tags $Tags -Location 'westeurope' -UseApplicationInsight $true
