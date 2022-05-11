@@ -51,6 +51,23 @@ If ApplicationInsight should be setup in the resource group or not.
 ### UseDeviceAuthentication
 If the Azure connection should be made with device authentication. Used when execute from ex Azure DevOps.
 
+### SqlSku
+Specifies which SQL SKU you want to generate. If not specified it will create a "basic" SQL Server. Allowed SKU 'Free', 'Basic', 'S0', 'S1', 'P1', 'P2', 'GP_Gen4_1', 'GP_S_Gen5_1', 'GP_Gen5_2', 'GP_S_Gen5_2', 'BC_Gen4_1', 'BC_Gen5_4'
+
+### AppPlanSku
+Specifies which AppPlan SKU you want to generate. If not specified it will create a "F1" plan will be created. Allowed SKU 'F1'
+  'D1'
+  'B1'
+  'B2'
+  'B3'
+  'S1'
+  'S2'
+  'S3'
+  'P1'
+  'P2'
+  'P3'
+  'P4'
+
 ## Examples
 ### Example 1
 ```powershell
@@ -91,5 +108,22 @@ $Tags = @{
     }
 New-OptimizelyCmsResourceGroupBicep -SubscriptionId '95a9fd36-7851-4918-b8c9-f146a219982c' -ResourceGroupName 'mycoolwebsite' -Environment 'inte' -DatabaseLogin 'somelogin' -DatabasePassword 'KXIN_rhxh3holt_s8it' -Tags $Tags -CmsVersion '11' -Location 'westeurope' -UseApplicationInsight $true -UseDeviceAuthentication $true 
 ```
+
+### Example 3
+```powershell
+$Tags = @{
+    "Environment"="dev";
+    "Owner"="ove.lartelius@epinova.se";
+    "App"="Optimizely";
+    "Client"="Customer AB";
+    "Project"="External Website 2021";
+    "ManagedBy"="ove.lartelius@epinova.se";
+    "Cost"="internal";
+    "Department"="IT";
+    "Expires"="2030-01-01";
+    }
+New-OptimizelyCmsResourceGroupBicep -SubscriptionId '95a9fd36-7851-4918-b8c9-f146a219982c' -ResourceGroupName 'mycoolwebsite' -Environment 'inte' -DatabaseLogin 'somelogin' -DatabasePassword 'KXIN_rhxh3holt_s8it' -Tags $Tags -CmsVersion '11' -Location 'westeurope' -UseApplicationInsight $true -UseDeviceAuthentication $true -SqlSku "S0" -AppPlanSku "D1"
+```
+
 
 [<< Back](/README.md)
