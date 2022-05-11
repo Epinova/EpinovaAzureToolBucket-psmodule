@@ -379,6 +379,10 @@ function New-OptimizelyCmsResourceGroupBicep {
         The location where the resource group should be hosted. Default = "westeurope". You can get a complete list of location by using "Get-AzureRmLocation |Format-Table".
     .PARAMETER UseApplicationInsight
         If ApplicationInsight should be setup in the resource group or not.
+    .PARAMETER SqlSku
+        Specifies which SQL SKU you want to generate. If not specified it will create a "basic" SQL Server. Allowed SKU 'Free', 'Basic', 'S0', 'S1', 'P1', 'P2', 'GP_Gen4_1', 'GP_S_Gen5_1', 'GP_Gen5_2', 'GP_S_Gen5_2', 'BC_Gen4_1', 'BC_Gen5_4'
+    .PARAMETER AppPlanSku
+        Specifies which AppPlan SKU you want to generate. If not specified it will create a "F1" plan will be created. Allowed SKU 'F1', 'D1', 'B1', 'B2', 'B3', 'S1', 'S2', 'S3', 'P1', 'P2', 'P3', 'P4'
     .EXAMPLE
         New-OptimizelyCmsResourceGroupBicep -SubscriptionId '95a9fd36-7851-4918-b8c9-f146a219982c' -ResourceGroupName 'mycoolwebsite' -Environment "inte" -DatabaseLogin "databasedbuser" -DatabasePassword 'KXIN_rhxh3holt_s8it' -CmsVersion "12" -Tags @{ "Environment"="dev";"Owner"="ove.lartelius@epinova.se";"App"="Optimizely";"Client"="Client name";"Project"="Project name";"ManagedBy"="Ove Lartelius";"Cost"="Internal";"Department"="IT";"Expires"="";  } -Location = "westeurope" -UseApplicationInsight $true 
     #>
@@ -419,7 +423,13 @@ function New-OptimizelyCmsResourceGroupBicep {
         [bool] $UseApplicationInsight = $false,
 
         [Parameter(Mandatory = $false)]
-        [bool] $UseDeviceAuthentication = $false
+        [bool] $UseDeviceAuthentication = $false,
+
+        [Parameter(Mandatory = $false)]
+        [string] $SqlSku,
+
+        [Parameter(Mandatory = $false)]
+        [string] $AppPlanSku
 
     )
 
@@ -437,6 +447,8 @@ function New-OptimizelyCmsResourceGroupBicep {
     Write-Host "CmsVersion:                      $CmsVersion"
     Write-Host "Tags:                            $TagsString"
     Write-Host "UseApplicationInsight:           $UseApplicationInsight"
+    Write-Host "SqlSku:                          $SqlSku"
+    Write-Host "AppPlanSku:                      $AppPlanSku"
     Write-Host "------------------------------------------------"
 
 
@@ -458,6 +470,14 @@ function New-OptimizelyCmsResourceGroupBicep {
         "useApplicationInsight"       = $UseApplicationInsight
         "tags"                        = $Tags
     };
+
+    if ($false -eq [string]::IsNullOrEmpty($SqlSku)) {
+        $Parameters = $Parameters + @{ "sqlSku" = $SqlSku}
+    }
+
+    if ($false -eq [string]::IsNullOrEmpty($AppPlanSku)){
+        $Parameters = $Parameters + @{ "appPlanSku" = $AppPlanSku }
+    }
 
     $bicepFile = "$PSScriptRoot\cms$CmsVersion.bicep"
     Write-Host "Use bicep: $bicepFile"
