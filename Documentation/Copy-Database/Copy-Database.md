@@ -38,12 +38,13 @@ $DestinationSqlDatabaseLogin = "sql-ove-1231hjkjia-dev-sa"
 $DestinationSqlDatabasePassword = "kGxxXXXxxXzZcrw9qVXxxXxxxXXcpzX"
 $DestinationStorageAccount = ""
 $DestinationStorageAccountContainer = "db-backups"
+$SqlSku = "Basic"
 
 Copy-Database -SubscriptionId $SubscriptionId -SourceResourceGroupName $SourceResourceGroupName -SourceSqlServerName $SourceSqlServerName 
     -SourceSqlDatabaseName $SourceSqlDatabaseName -DestinationResourceGroupName $DestinationResourceGroupName -DestinationSqlServerName $DestinationSqlServerName 
     -DestinationSqlDatabaseName $DestinationSqlDatabaseName -DestinationRunDatabaseBackup $DestinationRunDatabaseBackup 
     -DestinationSqlDatabaseLogin $DestinationSqlDatabaseLogin -DestinationSqlDatabasePassword $DestinationSqlDatabasePassword 
-    -DestinationStorageAccount $DestinationStorageAccount -DestinationStorageAccountContainer $DestinationStorageAccountContainer 
+    -DestinationStorageAccount $DestinationStorageAccount -DestinationStorageAccountContainer $DestinationStorageAccountContainer -SqlSku @SqlSku
 ```
 
 [<< Back](/README.md)
