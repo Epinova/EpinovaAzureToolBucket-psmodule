@@ -1,6 +1,6 @@
 @{
     RootModule        = 'EpinovaAzureToolBucket.psm1'
-    ModuleVersion     = '0.9.2'
+    ModuleVersion     = '0.10.1'
     GUID              = 'ebd0d848-0687-4de0-8538-c8bccc3b22ae'
     Author            = 'Ove Lartelius'
     CompanyName       = 'Epinova AB'

@@ -1098,6 +1098,9 @@ function Copy-Database{
     .PARAMETER DestinationStorageAccountContainer
         The StorageAccount container name that should hold the BACPAC file backup. If empty we will try to find the container with name "db-backups".
 
+    .PARAMETER SqlSku
+        Specifies which SQL SKU you want to generate. If not specified it will create a "basic" SQL Server. Allowed SKU 'Free', 'Basic', 'S0', 'S1', 'P1', 'P2', 'GP_Gen4_1', 'GP_S_Gen5_1', 'GP_Gen5_2', 'GP_S_Gen5_2', 'BC_Gen4_1', 'BC_Gen5_4'
+
     .EXAMPLE
         Invoke-AzureDatabaseCopy -SubscriptionId $SubscriptionId -SourceResourceGroupName $SourceResourceGroupName -SourceSqlServerName $SourceSqlServerName -SourceSqlDatabaseName $SourceSqlDatabaseName -DestinationResourceGroupName $DestinationResourceGroupName -DestinationSqlServerName $DestinationSqlServerName -DestinationSqlDatabaseName $DestinationSqlDatabaseName -DestinationRunDatabaseBackup $DestinationRunDatabaseBackup 
 
@@ -1145,7 +1148,10 @@ function Copy-Database{
         [string] $DestinationStorageAccount,
 
         [Parameter(Mandatory = $false)]
-        [string] $DestinationStorageAccountContainer
+        [string] $DestinationStorageAccountContainer,
+
+        [Parameter(Mandatory = $false)]
+        [string] $SqlSku
     )
 
     Connect-AzureSubscriptionAccount
@@ -1188,6 +1194,7 @@ function Copy-Database{
     Write-Host "DestinationDatabaseExist:           $destinationDatabaseExist"
     Write-Host "DestinationStorageAccount:          $DestinationStorageAccount"
     Write-Host "DestinationStorageAccountContainer: $DestinationStorageAccountContainer"
+    Write-Host "SqlSku:                             $SqlSku"
     Write-Host "------------------------------------------------"
 
     if ($true -eq $destinationDatabaseExist -and $true -eq $DestinationRunDatabaseBackup) {
@@ -1220,12 +1227,39 @@ function Copy-Database{
     Set-Item Env:\SuppressAzurePowerShellBreakingChangeWarnings "true"
     Write-Host "Start copying database '$SourceSqlDatabaseName' to '$DestinationSqlDatabaseName'."
     $databaseCopy = New-AzSqlDatabaseCopy -ResourceGroupName $SourceResourceGroupName -ServerName $SourceSqlServerName -DatabaseName $SourceSqlDatabaseName -CopyResourceGroupName $DestinationResourceGroupName -CopyServerName $DestinationSqlServerName -CopyDatabaseName $DestinationSqlDatabaseName
-    #$databaseCopy
-    Write-Host "Database '$SourceSqlDatabaseName' is copied to '$DestinationSqlDatabaseName'."
+    $databaseCopy
 
-    # # Check the SKU on destination database after copy. 
-    # $destinationDatabaseResult = Get-AzSqlDatabase -ResourceGroupName $DestinationResourceGroupName -ServerName $DestinationSqlServerName -DatabaseName $DestinationSqlDatabaseName
-    # $destinationDatabaseResult
+    Write-Host "--------------------------------------------------------------"
+
+    # Check the SKU on destination database after copy. 
+    $destinationDatabaseResult = Get-AzSqlDatabase -ResourceGroupName $DestinationResourceGroupName -ServerName $DestinationSqlServerName -DatabaseName $DestinationSqlDatabaseName
+    $destinationDatabaseResult
+
+    Write-Host "--------------------------------------------------------------"
+    
+    if ($false -eq [string]::IsNullOrEmpty($SqlSku)) {
+        Set-AzSqlDatabase -ResourceGroupName $DestinationResourceGroupName -DatabaseName $DestinationSqlDatabaseName -ServerName $DestinationSqlServerName -RequestedServiceObjectiveName $SqlSku #-Edition "Standard"
+        #try {
+        #    $databaseCopy = New-AzSqlDatabaseCopy -ResourceGroupName $SourceResourceGroupName -ServerName $SourceSqlServerName -DatabaseName $SourceSqlDatabaseName -CopyResourceGroupName $DestinationResourceGroupName -CopyServerName $DestinationSqlServerName -CopyDatabaseName $DestinationSqlDatabaseName -ServiceObjectiveName $SqlSku
+        #} catch {
+        #    $errorMessage = $_.ErrorDetails
+        #    if ($errorMessage -contains "does not support the sku") {
+        #        Write-Error "Database '$SourceSqlDatabaseName' is NOT copied to '$DestinationSqlDatabaseName'."
+        #    } else {
+        #        Write-Warning $errorMessage
+        #    }
+        #}
+    } #else {
+    #    $databaseCopy = New-AzSqlDatabaseCopy -ResourceGroupName $SourceResourceGroupName -ServerName $SourceSqlServerName -DatabaseName $SourceSqlDatabaseName -CopyResourceGroupName $DestinationResourceGroupName -CopyServerName $DestinationSqlServerName -CopyDatabaseName $DestinationSqlDatabaseName
+    #    Write-Host "Database '$SourceSqlDatabaseName' is copied to '$DestinationSqlDatabaseName'."
+    #}
+    Write-Host "--------------------------------------------------------------"
+
+    # Check the SKU on destination database after copy. 
+    $destinationDatabaseResult = Get-AzSqlDatabase -ResourceGroupName $DestinationResourceGroupName -ServerName $DestinationSqlServerName -DatabaseName $DestinationSqlDatabaseName
+    $destinationDatabaseResult
+
+
 }
 
 function Remove-Blobs{
