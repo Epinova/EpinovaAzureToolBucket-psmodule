@@ -34,8 +34,9 @@ $SourceContainerName = "mysitemedia"
 $DestinationResourceGroupName = "rg-ove-1231hjkjia-prep"
 $DestinationStorageAccountName = "stove1231hjkjiaprep"
 $DestinationContainerName = "mysitemedia"
+$CleanBeforeCopy = $true
 
-Copy-Blobs -SubscriptionId $SubscriptionId -SourceResourceGroupName $SourceResourceGroupName -SourceStorageAccountName $SourceStorageAccountName -SourceContainerName $SourceContainerName -DestinationResourceGroupName $DestinationResourceGroupName -DestinationStorageAccountName $DestinationStorageAccountName -DestinationContainerName $DestinationContainerName 
+Copy-Blobs -SubscriptionId $SubscriptionId -SourceResourceGroupName $SourceResourceGroupName -SourceStorageAccountName $SourceStorageAccountName -SourceContainerName $SourceContainerName -DestinationResourceGroupName $DestinationResourceGroupName -DestinationStorageAccountName $DestinationStorageAccountName -DestinationContainerName $DestinationContainerName -CleanBeforeCopy $CleanBeforeCopy
 ```
 
 
