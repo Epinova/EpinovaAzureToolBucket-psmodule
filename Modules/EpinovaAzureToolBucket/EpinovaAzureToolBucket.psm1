@@ -1351,6 +1351,9 @@ function Copy-Blobs{
     .PARAMETER DestinationContainerName
         The destination container name where the blobs should be moved.
 
+    .PARAMETER CleanBeforeCopy
+        Set to true if you want thw script to remove all blobs in destination container before we start copy over all blobs.
+
     .EXAMPLE
         Copy-Blobs -SubscriptionId $SubscriptionId -SourceResourceGroupName $SourceResourceGroupName -SourceStorageAccountName $SourceStorageAccountName -SourceContainerName $SourceContainerName -DestinationResourceGroupName $DestinationResourceGroupName -DestinationStorageAccountName $DestinationStorageAccountName -DestinationContainerName $DestinationContainerName 
     #>
@@ -1378,7 +1381,10 @@ function Copy-Blobs{
         [string] $DestinationStorageAccountName,
 
         [Parameter(Mandatory = $true)]
-        [string] $DestinationContainerName
+        [string] $DestinationContainerName,
+
+        [Parameter(Mandatory = $false)]
+        [bool] $CleanBeforeCopy
     )
 
     Connect-AzureSubscriptionAccount
@@ -1391,6 +1397,7 @@ function Copy-Blobs{
     Write-Host "DestinationResourceGroupName:   $DestinationResourceGroupName"
     Write-Host "DestinationStorageAccountName:  $DestinationStorageAccountName"
     Write-Host "DestinationContainerName:       $DestinationContainerName"
+    Write-Host "CleanBeforeCopy:                $CleanBeforeCopy"
     Write-Host "------------------------------------------------"
 
     $sourceStorageAccount = Get-AzStorageAccount -ResourceGroupName $SourceResourceGroupName -Name $SourceStorageAccountName 
@@ -1399,7 +1406,14 @@ function Copy-Blobs{
     $destinationStorageAccount = Get-AzStorageAccount -ResourceGroupName $DestinationResourceGroupName -Name $DestinationStorageAccountName 
     $destinationContext = $destinationStorageAccount.Context 
 
-    Get-AzStorageBlob -Container $SourceContainerName -Context $sourceContext | Start-AzStorageBlobCopy -DestContainer $DestinationContainerName  -Context $destinationContext
+    if ($true -eq $CleanBeforeCopy){
+        Write-Host "Start remove all blobs in $DestinationContainerName."    
+        (Get-AzStorageBlob -Container $DestinationContainerName -Context $destinationContext | Sort-Object -Property LastModified -Descending) | Remove-AzStorageBlob
+        Write-Host "All blobs in $DestinationContainerName should be removed."    
+    }
+
+    Write-Host "Start copy blobs"
+    Get-AzStorageBlob -Container $SourceContainerName -Context $sourceContext | Start-AzStorageBlobCopy -DestContainer $DestinationContainerName  -Context $destinationContext -Force
     Write-Host "Copy-Blobs finished"
 }
 
