@@ -435,14 +435,15 @@ function New-OptimizelyCmsResourceGroupBicep {
 
     $TagsString = $Tags | Out-String
     
-    $databasePasswordSecureString = ConvertTo-SecureString $DatabasePassword -AsPlainText -Force | Out-String
+    #$databasePasswordSecureString = ConvertTo-SecureString $DatabasePassword -AsPlainText -Force | Out-String
 
     Write-Host "New-OptimizelyCmsResourceGroupBicep - Inputs:----------"
     Write-Host "SubscriptionId:                  $SubscriptionId"
     Write-Host "ResourceGroupName:               $ResourceGroupName"
     Write-Host "Environment:                     $Environment"
     Write-Host "DatabaseLogin:                   $DatabaseLogin"
-    Write-Host "DatabasePassword:                $databasePasswordSecureString"
+    #Write-Host "DatabasePassword:                $databasePasswordSecureString"
+    Write-Host "DatabasePassword:                $DatabasePassword"
     Write-Host "Location:                        $Location"
     Write-Host "CmsVersion:                      $CmsVersion"
     Write-Host "Tags:                            $TagsString"
@@ -466,7 +467,7 @@ function New-OptimizelyCmsResourceGroupBicep {
         "projectName"                 = $ResourceGroupName
         "environmentName"             = $Environment
         "sqlserverAdminLogin"         = $DatabaseLogin
-        "sqlserverAdminLoginPassword" = $databasePasswordSecureString #$DatabasePassword
+        "sqlserverAdminLoginPassword" = $DatabasePassword #$databasePasswordSecureString
         "useApplicationInsight"       = $UseApplicationInsight
         "tags"                        = $Tags
     };
