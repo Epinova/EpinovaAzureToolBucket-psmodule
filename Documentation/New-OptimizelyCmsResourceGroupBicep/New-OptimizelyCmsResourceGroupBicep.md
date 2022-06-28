@@ -66,7 +66,10 @@ Specifies which AppPlan SKU you want to generate. If not specified it will creat
   'P1'
   'P2'
   'P3'
-  'P4'
+  'P4'  
+
+### ServiceBus sku  
+You can not specify the sku for the service bus at present time. But it will generate a "Standard" service bus sku since Optimizely CMS needs that to cache invalidate.  
 
 ## Examples
 ### Example 1
