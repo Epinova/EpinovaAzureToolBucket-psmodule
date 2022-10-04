@@ -16,7 +16,7 @@ param environmentName string
   'Standard'
   'Premium'
 ])
-param sku string = 'Basic'
+param sku string = 'Standard'
 
 resource servicebus 'Microsoft.ServiceBus/namespaces@2021-06-01-preview' = {
   name: toLower('sb-${projectName}-${environmentName}')
