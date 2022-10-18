@@ -68,6 +68,9 @@ resource appPlan 'Microsoft.Web/serverfarms@2021-02-01' = {
     name: appPlanSku
     capacity: skuCapacity
   }
+  properties: {
+    reserved: netVersion != 'v4.8' ? true : false
+  }
 }
 
 var databaseConnectionStringsArray = [for item in items(databaseConnectionStrings): {
