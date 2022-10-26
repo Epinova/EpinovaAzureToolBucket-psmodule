@@ -36,6 +36,10 @@ Remove all blobs from a StorageAccount container.
 Copy all blobs from a StorageAccount container to another.  
 [Documentation](Documentation/Copy-Blobs/Copy-Blobs.md)
 
+## Send-Blob
+Send/Upload a blob from disc to a StorageAccount container.  
+[Documentation](Documentation/Send-Blob/Send-Blob.md)
+
 ## Old
 ## New-EpiserverCmsResourceGroup
 Create a Episerver CMS resource group in Azure.  

@@ -1478,4 +1478,66 @@ function New-AzureDevOpsProject{
     Write-Host "--- THE END ---"
 }
 
-Export-ModuleMember -Function @( 'New-OptimizelyCmsResourceGroup', 'New-OptimizelyCmsResourceGroupBicep', 'Get-OptimizelyCmsConnectionStrings', 'New-EpiserverCmsResourceGroup', 'Get-EpiserverCmsConnectionStrings', 'Add-AzureDatabaseUser', 'Backup-Database', 'Copy-Database', 'Remove-Blobs', 'Copy-Blobs', 'New-AzureDevOpsProject' )
+function Send-Blob{
+    <#
+    .SYNOPSIS
+        Send a blob to a container in Azure
+    .DESCRIPTION
+        Send a blob to a container in Azure
+
+    .PARAMETER OrganizationName
+        xx
+
+    .EXAMPLE
+        xxx
+
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [string] $SubscriptionId,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [string] $ResourceGroupName,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [string] $StorageAccountName,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [string] $ContainerName,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [string] $FilePath
+    )
+
+    $fileName = $FilePath.Substring($FilePath.LastIndexOf("\") + 1)
+
+    Write-Host "Send-Blob - Inputs:----------------------------"
+    Write-Host "SubscriptionId:           $SubscriptionId"
+    Write-Host "ResourceGroupName:        $ResourceGroupName"
+    Write-Host "StorageAccountName:       $StorageAccountName"
+    Write-Host "SourceContainerName:      $ContainerName"
+    Write-Host "FilePath:                 $FilePath"
+    Write-Host "FileName:                 $fileName"
+    Write-Host "------------------------------------------------"
+
+    Connect-AzureSubscriptionAccount
+
+    $storageAccount = Get-AzStorageAccount -ResourceGroupName $ResourceGroupName -Name $StorageAccountName 
+
+    if ($null -ne $storageAccount){
+        Write-Host "Start upload blob $fileName" 
+        Set-AzStorageBlobContent -Container $ContainerName -File $FilePath -Blob $fileName -Context $storageAccount.context
+        Write-Host "Blob uploaded"
+    } else {
+        Write-Error "Could not connect to StorageAccount: $StorageAccountName"
+    }
+
+}
+
+Export-ModuleMember -Function @( 'New-OptimizelyCmsResourceGroup', 'New-OptimizelyCmsResourceGroupBicep', 'Get-OptimizelyCmsConnectionStrings', 'New-EpiserverCmsResourceGroup', 'Get-EpiserverCmsConnectionStrings', 'Add-AzureDatabaseUser', 'Backup-Database', 'Copy-Database', 'Remove-Blobs', 'Copy-Blobs', 'New-AzureDevOpsProject', 'Send-Blob' )
