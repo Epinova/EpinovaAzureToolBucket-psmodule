@@ -1,9 +1,9 @@
-# Send-Blob
-Send/Upload blob to a StorageAccount container.    
+# Import-BacpacDatabase
+Import a bacpac file, from storageaccount container, to a database in Azure.  
 
 ## Prerequisite
 ### Nedded Azure services
-The only service which is mandatory is Azure Storage Account, on which bacpac files will be uploaded to.  
+Service which is mandatory is Azure Storage Account and Azure SQL Server, on which bacpac files will be imported to.  
 ### PowerShellGet
 Since PowerShell Gallery is involved, you need to have PowerShellGet installed. Instructions how to install PowerShellGet (https://docs.microsoft.com/en-us/powershell/scripting/gallery/installing-psget?view=powershell-7.1).
 ### Blob container
@@ -28,9 +28,16 @@ $SubscriptionId = "e8xxx180-9xxf-4xx4-axx7-3xxxffxx7fxx"
 $ResourceGroupName = "rg-ove-1231hjkjia-dev"
 $StorageAccountName = "stove1231hjkjiadev"
 $StorageAccountContainer = "db-backups"
-$FilePath = "C:\dev\temp\_blobDownloads\epicms_Integration_20221027082506.bacpac"
+$BacpacFilename = "C:\dev\temp\_blobDownloads\epicms_Integration_20221027082506.bacpac"
+$SqlServerName = "your-sql-server"
+$SqlDatabaseName = "your-sql-databasename"
+$SqlDatabaseLogin = "sa"
+$SqlDatabasePassword = "l#tm#inmyd@tabaseplease!"
+$RunDatabaseBackup = $true
+$SqlSku = "Basic"
 
-Send-Blob -SubscriptionId $SubscriptionId -ResourceGroupName $ResourceGroupName -StorageAccountName $StorageAccountName -StorageAccountContainer $StorageAccountContainer -FilePath $FilePath
+Import-BacpacDatabase -SubscriptionId $SubscriptionId -ResourceGroupName $ResourceGroupName -StorageAccountName $StorageAccountName -StorageAccountContainer $StorageAccountContainer -BacpacFilename $BacpacFilename -SqlServerName $SqlServerName -SqlDatabaseName $SqlDatabaseName -SqlDatabaseLogin $SqlDatabaseLogin -SqlDatabasePassword $Password -RunDatabaseBackup $RunDatabaseBackup -SqlSku $SqlSku
 ```
+
 
 [<< Back](/README.md)

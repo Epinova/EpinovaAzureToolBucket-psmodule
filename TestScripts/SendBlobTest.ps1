@@ -1,16 +1,19 @@
 Remove-Module -Name "EpinovaAzureToolBucket" -Verbose
 #Remove-Module -Name "Az" -Verbose
-Import-Module -Name E:\dev\EpinovaAzureToolBucket-psmodule\Modules\EpinovaAzureToolBucket -Verbose
+Import-Module -Name C:\dev\EpinovaAzureToolBucket-psmodule\Modules\EpinovaAzureToolBucket -Verbose
 
 $SubscriptionId = "x802f980-979x-1111-axx7-3bbxxfcb7x99"
 $ResourceGroupName = "rg-sprit-1231hjkjia-inte"
 $StorageAccountName = "stsprit1231hjkjiainte"
-$ContainerName = "sitemedia"
-$FilePath = "E:\dev\temp\_blobDownloads\epicms_Integration_20221021145233.bacpac"
+$StorageAccountContainer = "sitemedia"
+
+$FilePath = "C:\dev\temp\_blobDownloads\epicms_Integration_20221027082506.bacpac"
 
 # Override with real settings
-. E:\dev\temp\PowerShellSettingFiles\EpinovaAzureToolBucket_SendBlob.ps1
+. C:\dev\temp\PowerShellSettingFiles\EpinovaAzureToolBucket_SendBlob.ps1
 
-Send-Blob -SubscriptionId $SubscriptionId -ResourceGroupName $ResourceGroupName -StorageAccountName $StorageAccountName -ContainerName $ContainerName -FilePath $FilePath
+Get-InstalledModule Az.Storage
 
+Send-Blob -SubscriptionId $SubscriptionId -ResourceGroupName $ResourceGroupName -StorageAccountName $StorageAccountName -StorageAccountContainer $StorageAccountContainer -FilePath $FilePath
 
+Get-InstalledModule Az.Storage

@@ -28,6 +28,10 @@ Backup/Export a database and store BACPAC in storage account container.
 Copy a database from one place to another. If the destination database exist it will be 'overwritten'. You can decide if you want to make a backup of the destination database before it is dropped.  
 [Documentation](Documentation/Copy-Database/Copy-Database.md)
 
+## Import-BacpacDatabase
+Import a bacpac file, from storageaccount container, to a database in Azure.  
+[Documentation](Documentation/Import-BacpacDatabase/Import-BacpacDatabase.md)  
+
 ## Remove-Blobs
 Remove all blobs from a StorageAccount container.  
 [Documentation](Documentation/Remove-Blobs/Remove-Blobs.md)
