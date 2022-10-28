@@ -1535,11 +1535,17 @@ function Send-Blob{
     .PARAMETER FilePath
         The full file path to the blob that should be uploaded to Azure.
 
-    .EXAMPLE
-        Send-Blob -SubscriptionId $SubscriptionId -ResourceGroupName $ResourceGroupName -StorageAccountName $StorageAccountName -StorageAccountContainer $StorageAccountContainer -FilePath $filePath
+    .PARAMETER FilePath
+        The blob name that should get when uploaded to Azure. If you specify 'foldername\filename.txt' it will create a folder with the name 'foldername' where it will put the 'filename.txt' file.
 
     .EXAMPLE
-        $result = Send-Blob -SubscriptionId $SubscriptionId -ResourceGroupName $ResourceGroupName -StorageAccountName $StorageAccountName -StorageAccountContainer $StorageAccountContainer -FilePath $filePath
+        Send-Blob -SubscriptionId $SubscriptionId -ResourceGroupName $ResourceGroupName -StorageAccountName $StorageAccountName -StorageAccountContainer $StorageAccountContainer -FilePath $filePath -BlobName $BlobName
+
+    .EXAMPLE
+        Send-Blob -SubscriptionId $SubscriptionId -ResourceGroupName $ResourceGroupName -FilePath $filePath -BlobName $BlobName
+
+    .EXAMPLE
+        $result = Send-Blob -SubscriptionId $SubscriptionId -ResourceGroupName $ResourceGroupName -StorageAccountName $StorageAccountName -StorageAccountContainer $StorageAccountContainer -FilePath $filePath -BlobName $BlobName
 
     #>
     [CmdletBinding()]
@@ -1560,10 +1566,15 @@ function Send-Blob{
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
-        [string] $FilePath
+        [string] $FilePath,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [string] $BlobName
     )
 
-    $fileName = $FilePath.Substring($FilePath.LastIndexOf("\") + 1)
+    Get-InstalledModule Az.Storage
+    Connect-AzureSubscriptionAccount
 
     if ($null -eq $StorageAccountName -or "" -eq $StorageAccountName){
         $storageAccount = Get-DefaultStorageAccount -ResourceGroupName $ResourceGroupName
@@ -1588,23 +1599,20 @@ function Send-Blob{
     Write-Host "StorageAccountName:       $StorageAccountName"
     Write-Host "StorageAccountContainer:  $StorageAccountContainer"
     Write-Host "FilePath:                 $FilePath"
-    Write-Host "FileName:                 $fileName"
+    Write-Host "BlobName:                 $BlobName"
     Write-Host "------------------------------------------------"
-
-    Get-InstalledModule Az.Storage
-    Connect-AzureSubscriptionAccount
 
     $storageAccount = Get-AzStorageAccount -ResourceGroupName $ResourceGroupName -Name $storageAccountName 
 
     if ($null -ne $storageAccount){
-        Write-Host "Start upload blob $fileName" 
-        Set-AzStorageBlobContent -Container $storageContainerName -File $FilePath -Blob $fileName -Context $storageAccount.context -Force
+        Write-Host "Start upload blob $BlobName" 
+        Set-AzStorageBlobContent -Container $storageContainerName -File $FilePath -Blob $BlobName -Context $storageAccount.context -Force
         Write-Host "Blob uploaded"
     } else {
         Write-Error "Could not connect to StorageAccount: $storageAccountName"
     }
 
-    return $fileName
+    return $BlobName
 }
 
 function Import-BacpacDatabase{
@@ -1648,7 +1656,11 @@ function Import-BacpacDatabase{
         Specifies which SQL SKU you want to generate. If not specified it will create a "basic" SQL Server. Allowed SKU 'Free', 'Basic', 'S0', 'S1', 'P1', 'P2', 'GP_Gen4_1', 'GP_S_Gen5_1', 'GP_Gen5_2', 'GP_S_Gen5_2', 'BC_Gen4_1', 'BC_Gen5_4'
 
     .EXAMPLE
-        XXX
+        Import-BacpacDatabase -SubscriptionId $SubscriptionId -ResourceGroupName $ResourceGroupName -StorageAccountName $StorageAccountName -StorageAccountContainer $StorageAccountContainer -BacpacFilename $BacpacFilename -SqlServerName $SqlServerName -SqlDatabaseName $SqlDatabaseName -SqlDatabaseLogin $SqlDatabaseLogin -SqlDatabasePassword $SqlDatabasePassword -RunDatabaseBackup $RunDatabaseBackup -SqlSku $SqlSku
+
+    .EXAMPLE
+        Import-BacpacDatabase -SubscriptionId $SubscriptionId -ResourceGroupName $ResourceGroupName -StorageAccountContainer $StorageAccountContainer -BacpacFilename $BacpacFilename -SqlDatabaseName $SqlDatabaseName -SqlDatabaseLogin $SqlDatabaseLogin -SqlDatabasePassword $SqlDatabasePassword -RunDatabaseBackup $RunDatabaseBackup -SqlSku $SqlSku
+
 
     #>
     [cmdletbinding()]
@@ -1746,6 +1758,8 @@ function Import-BacpacDatabase{
     Write-Host "SqlDatabasePassword:      **** (it is a secret...)"
     Write-Host "SqlSku:                   $SqlSku"
     Write-Host "------------------------------------------------"
+
+    Update-AzConfig -DisplayBreakingChangeWarning $false
  
     if ($true -eq $databaseExist -and $true -eq $RunDatabaseBackup) {
         Backup-Database -SubscriptionId $SubscriptionId -ResourceGroupName $ResourceGroupName -SqlServerName $SqlServerName -SqlDatabaseName $SqlDatabaseName -SqlDatabaseLogin $SqlDatabaseLogin -SqlDatabasePassword $SqlDatabasePassword -StorageAccountName $storageAccountName -StorageAccountContainer $StorageAccountContainer
