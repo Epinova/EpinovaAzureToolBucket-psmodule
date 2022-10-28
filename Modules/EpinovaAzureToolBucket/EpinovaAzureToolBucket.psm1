@@ -1573,7 +1573,6 @@ function Send-Blob{
         [string] $BlobName
     )
 
-    Get-InstalledModule Az.Storage
     Connect-AzureSubscriptionAccount
 
     if ($null -eq $StorageAccountName -or "" -eq $StorageAccountName){
@@ -1660,7 +1659,6 @@ function Import-BacpacDatabase{
 
     .EXAMPLE
         Import-BacpacDatabase -SubscriptionId $SubscriptionId -ResourceGroupName $ResourceGroupName -StorageAccountContainer $StorageAccountContainer -BacpacFilename $BacpacFilename -SqlDatabaseName $SqlDatabaseName -SqlDatabaseLogin $SqlDatabaseLogin -SqlDatabasePassword $SqlDatabasePassword -RunDatabaseBackup $RunDatabaseBackup -SqlSku $SqlSku
-
 
     #>
     [cmdletbinding()]
@@ -1759,16 +1757,14 @@ function Import-BacpacDatabase{
     Write-Host "SqlSku:                   $SqlSku"
     Write-Host "------------------------------------------------"
 
-    Update-AzConfig -DisplayBreakingChangeWarning $false
+    Set-Item Env:\SuppressAzurePowerShellBreakingChangeWarnings "true"
  
     if ($true -eq $databaseExist -and $true -eq $RunDatabaseBackup) {
         Backup-Database -SubscriptionId $SubscriptionId -ResourceGroupName $ResourceGroupName -SqlServerName $SqlServerName -SqlDatabaseName $SqlDatabaseName -SqlDatabaseLogin $SqlDatabaseLogin -SqlDatabasePassword $SqlDatabasePassword -StorageAccountName $storageAccountName -StorageAccountContainer $StorageAccountContainer
 
         Unpublish-Database -ResourceGroupName $ResourceGroupName -SqlServerName $SqlServerName -SqlDatabaseName $SqlDatabaseName
     }
-
-    Set-Item Env:\SuppressAzurePowerShellBreakingChangeWarnings "true"
-
+    
     $importRequest = New-AzSqlDatabaseImport -ResourceGroupName $ResourceGroupName `
      -ServerName $SqlServerName `
      -DatabaseName $SqlDatabaseName `
