@@ -128,7 +128,7 @@ module web 'Modules/web.bicep' = {
     useApplicationInsight: useApplicationInsight
     environmentName: environmentName
     databaseConnectionStrings: {
-      'EPiServerDB': 'Server=tcp:${sql.outputs.fullyQualifiedDomainName},1433;Initial Catalog=${episerverDbName};User Id=${sqlserverAdminLogin};Password=${sqlserverAdminLoginPassword};Trusted_Connection=False;Encrypt=True;Connection Timeout=30;MultipleActiveResultSets=True'
+      'EPiServerDB': 'Server=tcp:${sql.outputs.fullyQualifiedDomainName},1433;Initial Catalog=sqldb-${projectName}-${episerverDbName}-${environmentName};User Id=${sqlserverAdminLogin};Password=${sqlserverAdminLoginPassword};Trusted_Connection=False;Encrypt=True;Connection Timeout=30;MultipleActiveResultSets=True'
     }
     serviceBusId: servicebus.outputs.id
     serviceBusName: servicebus.outputs.name
