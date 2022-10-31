@@ -1614,6 +1614,97 @@ function Send-Blob{
     return $BlobName
 }
 
+function Send-BlobAsConnected{
+    <#
+    .SYNOPSIS
+        Send a blob to a container in Azure
+    .DESCRIPTION
+        Send a blob to a container in Azure
+
+    .PARAMETER ResourceGroupName
+        The resource group name where the blob should be uploaded.
+
+    .PARAMETER StorageAccountName
+        The StorageAccount name where the blob should be uploaded.
+
+    .PARAMETER StorageAccountContainer
+        The container name where the blob should be uploaded.
+
+    .PARAMETER FilePath
+        The full file path to the blob that should be uploaded to Azure.
+
+    .PARAMETER FilePath
+        The blob name that should get when uploaded to Azure. If you specify 'foldername\filename.txt' it will create a folder with the name 'foldername' where it will put the 'filename.txt' file.
+
+    .EXAMPLE
+        Send-Blob -SubscriptionId $SubscriptionId -ResourceGroupName $ResourceGroupName -StorageAccountName $StorageAccountName -StorageAccountContainer $StorageAccountContainer -FilePath $filePath -BlobName $BlobName
+
+    .EXAMPLE
+        Send-Blob -SubscriptionId $SubscriptionId -ResourceGroupName $ResourceGroupName -FilePath $filePath -BlobName $BlobName
+
+    .EXAMPLE
+        $result = Send-Blob -SubscriptionId $SubscriptionId -ResourceGroupName $ResourceGroupName -StorageAccountName $StorageAccountName -StorageAccountContainer $StorageAccountContainer -FilePath $filePath -BlobName $BlobName
+
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [string] $ResourceGroupName,
+
+        [Parameter(Mandatory = $false)]
+        [string] $StorageAccountName,
+
+        [Parameter(Mandatory = $false)]
+        [string] $StorageAccountContainer,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [string] $FilePath,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [string] $BlobName
+    )
+
+    if ($null -eq $StorageAccountName -or "" -eq $StorageAccountName){
+        $storageAccount = Get-DefaultStorageAccount -ResourceGroupName $ResourceGroupName
+        $storageAccountName = $storageAccount.StorageAccountName
+    } else {
+        $storageAccount = Get-DefaultStorageAccount -ResourceGroupName $ResourceGroupName -StorageAccountName $StorageAccountName
+        $storageAccountName = $storageAccount.StorageAccountName
+    }
+    Write-Host "Found StorageAccount '$storageAccountName'"
+
+    if ($null -eq $StorageAccountContainer -or "" -eq $StorageAccountContainer){
+        $storageContainer = Get-StorageAccountContainer -StorageAccount $storageAccount -ContainerName $StorageAccountContainer
+        $storageContainerName = $storageContainer.Name
+    } else {
+        $storageContainerName = $StorageAccountContainer
+    }
+    Write-Host "Found StorageAccount container '$storageContainerName'"
+
+    Write-Host "Send-BlobAsConnected - Inputs:----------------------------"
+    Write-Host "ResourceGroupName:        $ResourceGroupName"
+    Write-Host "StorageAccountName:       $StorageAccountName"
+    Write-Host "StorageAccountContainer:  $StorageAccountContainer"
+    Write-Host "FilePath:                 $FilePath"
+    Write-Host "BlobName:                 $BlobName"
+    Write-Host "------------------------------------------------"
+
+    $storageAccount = Get-AzStorageAccount -ResourceGroupName $ResourceGroupName -Name $storageAccountName 
+
+    if ($null -ne $storageAccount){
+        Write-Host "Start upload blob $BlobName" 
+        Set-AzStorageBlobContent -Container $storageContainerName -File $FilePath -Blob $BlobName -Context $storageAccount.context -Force
+        Write-Host "Blob uploaded"
+    } else {
+        Write-Error "Could not connect to StorageAccount: $storageAccountName"
+    }
+
+    return $BlobName
+}
+
 function Import-BacpacDatabase{
     <#
     .SYNOPSIS
@@ -1804,4 +1895,4 @@ function Import-BacpacDatabase{
     Set-AzSqlDatabase -ResourceGroupName $ResourceGroupName -DatabaseName $SqlDatabaseName -ServerName $SqlServerName -RequestedServiceObjectiveName $SqlSku #-Edition "Standard"
  }
 
-Export-ModuleMember -Function @( 'New-OptimizelyCmsResourceGroup', 'New-OptimizelyCmsResourceGroupBicep', 'Get-OptimizelyCmsConnectionStrings', 'New-EpiserverCmsResourceGroup', 'Get-EpiserverCmsConnectionStrings', 'Add-AzureDatabaseUser', 'Backup-Database', 'Copy-Database', 'Import-BacpacDatabase', 'Remove-Blobs', 'Copy-Blobs', 'New-AzureDevOpsProject', 'Send-Blob' )
+ Export-ModuleMember -Function @( 'New-OptimizelyCmsResourceGroup', 'New-OptimizelyCmsResourceGroupBicep', 'Get-OptimizelyCmsConnectionStrings', 'New-EpiserverCmsResourceGroup', 'Get-EpiserverCmsConnectionStrings', 'Add-AzureDatabaseUser', 'Backup-Database', 'Copy-Database', 'Import-BacpacDatabase', 'Remove-Blobs', 'Copy-Blobs', 'New-AzureDevOpsProject', 'Send-Blob', 'Send-BlobAsConnected' )
