@@ -1020,20 +1020,24 @@ function Backup-Database{
     Connect-AzureSubscriptionAccount
 
     if ($null -eq $StorageAccountName -or "" -eq $StorageAccountName){
+        Write-Host "StorageAccount is not set. We will try to find a storage account."
         $storageAccount = Get-DefaultStorageAccount -ResourceGroupName $ResourceGroupName
         $storageAccountName = $storageAccount.StorageAccountName
+        Write-Host "Found StorageAccount '$storageAccountName'"
     } else {
         $storageAccount = Get-DefaultStorageAccount -ResourceGroupName $ResourceGroupName -StorageAccountName $StorageAccountName
         $storageAccountName = $storageAccount.StorageAccountName
     }
-    Write-Host "Found StorageAccount '$storageAccountName'"
+    
     if ($null -eq $StorageAccountContainer -or "" -eq $StorageAccountContainer){
+        Write-Host "StorageAccount container is not set. We will try to find a container."
         $storageContainer = Get-StorageAccountContainer -StorageAccount $storageAccount -ContainerName $StorageAccountContainer
         $storageContainerName = $storageContainer.Name
+        Write-Host "Found StorageAccount container '$storageContainerName'"
     } else {
         $storageContainerName = $StorageAccountContainer
     }
-    Write-Host "Found StorageAccount container '$storageContainerName'"
+    
     
     if ($null -eq $SqlServerName -or "" -eq $SqlServerName) {
         $SqlServerName = Get-DefaultSqlServer -ResourceGroupName $ResourceGroupName
@@ -1576,21 +1580,24 @@ function Send-Blob{
     Connect-AzureSubscriptionAccount
 
     if ($null -eq $StorageAccountName -or "" -eq $StorageAccountName){
+        Write-Host "StorageAccount is not set. We will try to find a storage account."
         $storageAccount = Get-DefaultStorageAccount -ResourceGroupName $ResourceGroupName
         $storageAccountName = $storageAccount.StorageAccountName
+        Write-Host "Found StorageAccount '$storageAccountName'"
     } else {
         $storageAccount = Get-DefaultStorageAccount -ResourceGroupName $ResourceGroupName -StorageAccountName $StorageAccountName
         $storageAccountName = $storageAccount.StorageAccountName
     }
-    Write-Host "Found StorageAccount '$storageAccountName'"
 
     if ($null -eq $StorageAccountContainer -or "" -eq $StorageAccountContainer){
+        Write-Host "StorageAccount container is not set. We will try to find a container."
         $storageContainer = Get-StorageAccountContainer -StorageAccount $storageAccount -ContainerName $StorageAccountContainer
         $storageContainerName = $storageContainer.Name
+        Write-Host "Found StorageAccount container '$storageContainerName'"
     } else {
         $storageContainerName = $StorageAccountContainer
     }
-    Write-Host "Found StorageAccount container '$storageContainerName'"
+    
 
     Write-Host "Send-Blob - Inputs:----------------------------"
     Write-Host "SubscriptionId:           $SubscriptionId"
@@ -1668,21 +1675,24 @@ function Send-BlobAsConnected{
     )
 
     if ($null -eq $StorageAccountName -or "" -eq $StorageAccountName){
+        Write-Host "StorageAccount is not set. We will try to find a storage account."
         $storageAccount = Get-DefaultStorageAccount -ResourceGroupName $ResourceGroupName
         $storageAccountName = $storageAccount.StorageAccountName
+        Write-Host "Found StorageAccount '$storageAccountName'"
     } else {
         $storageAccount = Get-DefaultStorageAccount -ResourceGroupName $ResourceGroupName -StorageAccountName $StorageAccountName
         $storageAccountName = $storageAccount.StorageAccountName
     }
-    Write-Host "Found StorageAccount '$storageAccountName'"
+    
 
     if ($null -eq $StorageAccountContainer -or "" -eq $StorageAccountContainer){
+        Write-Host "StorageAccount container is not set. We will try to find a container."
         $storageContainer = Get-StorageAccountContainer -StorageAccount $storageAccount -ContainerName $StorageAccountContainer
         $storageContainerName = $storageContainer.Name
+        Write-Host "Found StorageAccount container '$storageContainerName'"
     } else {
         $storageContainerName = $StorageAccountContainer
     }
-    Write-Host "Found StorageAccount container '$storageContainerName'"
 
     Write-Host "Send-BlobAsConnected - Inputs:----------------------------"
     Write-Host "ResourceGroupName:        $ResourceGroupName"
@@ -1799,21 +1809,25 @@ function Import-BacpacDatabase{
     Connect-AzureSubscriptionAccount
 
     if ($null -eq $StorageAccountName -or "" -eq $StorageAccountName){
+        Write-Host "StorageAccount is not set. We will try to find a storage account."
         $storageAccount = Get-DefaultStorageAccount -ResourceGroupName $ResourceGroupName
         $storageAccountName = $storageAccount.StorageAccountName
+        Write-Host "Found StorageAccount '$storageAccountName'"
     } else {
         $storageAccount = Get-DefaultStorageAccount -ResourceGroupName $ResourceGroupName -StorageAccountName $StorageAccountName
         $storageAccountName = $storageAccount.StorageAccountName
     }
-    Write-Host "Found StorageAccount '$storageAccountName'"
+    
 
     if ($null -eq $StorageAccountContainer -or "" -eq $StorageAccountContainer){
+        Write-Host "StorageAccount container is not set. We will try to find a container."
         $storageContainer = Get-StorageAccountContainer -StorageAccount $storageAccount -ContainerName $StorageAccountContainer
         $storageContainerName = $storageContainer.Name
+        Write-Host "Found StorageAccount container '$storageContainerName'"
     } else {
         $storageContainerName = $StorageAccountContainer
     }
-    Write-Host "Found StorageAccount container '$storageContainerName'"
+    
     
     if ($null -eq $SqlServerName -or "" -eq $SqlServerName) {
         $SqlServerName = Get-DefaultSqlServer -ResourceGroupName $ResourceGroupName
@@ -1826,12 +1840,12 @@ function Import-BacpacDatabase{
         $databaseResult = Get-AzSqlDatabase -ResourceGroupName $ResourceGroupName -ServerName $SqlServerName -DatabaseName $SqlDatabaseName -ErrorAction SilentlyContinue
         if ($null -ne $databaseResult) {
             $databaseExist = $true
-            Write-Host "Destination database $SqlDatabaseName exist."
+            Write-Host "Destination database $SqlDatabaseName exist. We need to drop it to continue."
         } else {
-            Write-Host "Destination database $SqlDatabaseName does not exist."
+            Write-Host "Destination database $SqlDatabaseName does not exist. We will create it."
         }
     } catch {
-        Write-Host "Destination database $SqlDatabaseName does not exist."
+        Write-Host "Destination database $SqlDatabaseName does not exist. We will create it."
         $error.clear()
     }
 
