@@ -1468,9 +1468,6 @@ function Copy-BlobsWithSas{
     .PARAMETER SourceSasLink
         The SAS link for the source blob container.
 
-    .PARAMETER SourceContainerName
-        The source container where the blobs exist.
-
     .PARAMETER DestinationSubscriptionId
         Your Azure SubscriptionId where you want to upload your blobs.
 
@@ -1487,8 +1484,7 @@ function Copy-BlobsWithSas{
         Set to true if you want thw script to remove all blobs in destination container before we start copy over all blobs.
 
     .EXAMPLE
-        Copy-BlobsWithSas -SourceSasLink $SourceSasLink -SourceContainerName $SourceContainerName -DestinationSubscriptionId $DestinationSubscriptionId -DestinationResourceGroupName $DestinationResourceGroupName -DestinationStorageAccountName $DestinationStorageAccountName -DestinationContainerName $DestinationContainerName 
-        Copy-BlobsWithSas -SourceSasLink $SourceSasLink -SourceStorageAccountName $SourceStorageAccountName -DestinationSubscriptionId $DestinationSubscriptionId -DestinationResourceGroupName $DestinationResourceGroupName -DestinationStorageAccountName $DestinationStorageAccountName -DestinationContainerName $DestinationContainerName 
+        Copy-BlobsWithSas -SourceSasLink $SourceSasLink -DestinationSubscriptionId $DestinationSubscriptionId -DestinationResourceGroupName $DestinationResourceGroupName -DestinationStorageAccountName $DestinationStorageAccountName -DestinationContainerName $DestinationContainerName 
     #>
     [CmdletBinding()]
     param(
@@ -1497,14 +1493,6 @@ function Copy-BlobsWithSas{
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [string] $SourceSasLink,
-
-        # [Parameter(Mandatory = $true)]
-        # [ValidateNotNullOrEmpty()]
-        # [string] $SourceStorageAccountName,
-
-        [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
-        [string] $SourceContainerName,
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
@@ -1531,8 +1519,6 @@ function Copy-BlobsWithSas{
 
     Write-Host "Copy-BlobsWithSas - Inputs:----------------------------"
     Write-Host "SourceSasLink:                  $SourceSasLink"
-    #Write-Host "SourceStorageAccountName:       $SourceStorageAccountName"
-    Write-Host "SourceContainerName:            $SourceContainerName"
     Write-Host "DestinationSubscriptionId:      $DestinationSubscriptionId"
     Write-Host "DestinationResourceGroupName:   $DestinationResourceGroupName"
     Write-Host "DestinationStorageAccountName:  $DestinationStorageAccountName"
@@ -1540,17 +1526,31 @@ function Copy-BlobsWithSas{
     Write-Host "CleanBeforeCopy:                $CleanBeforeCopy"
     Write-Host "------------------------------------------------"
 
+    $blobCopy = $false
+    if ($SourceSasLink.Contains("&sr=b&")) {
+        Write-Host "Blob copy"
+        $SourceSasLink -match "https:\/\/(.*).blob.core.*\/(.*)\/(.*)\?" | Out-Null
+        $blob = $Matches[3]
+        Write-Host "Blob:                           $blob"
+        $blobCopy = $true
+    } elseif ($SourceSasLink.Contains("&sr=c&")) {
+        Write-Host "Container copy"
+        $SourceSasLink -match "https:\/\/(.*).blob.core.*\/(.*)\?" | Out-Null
+    } else {
+        Write-Error "Not supported sr (Storage Resource). Only support sr=b|c."
+        exit
+    }
+    $sourceStorageAccountName = $Matches[1]
+    Write-Host "SourceStorageAccountName:       $sourceStorageAccountName"
 
-    $fullSasLink = $SourceSasLink
-    $fullSasLink -match "https:\/\/(.*).blob.core" | Out-Null
-    $SourceStorageAccountName = $Matches[1]
-    Write-Host "SourceStorageAccountName:       $SourceStorageAccountName"
+    $sourceContainerName = $Matches[2]
+    Write-Host "SourceContainerName:            $sourceContainerName"
 
-    $fullSasLink -match "(\?.*)" | Out-Null
+    $SourceSasLink -match "(\?.*)" | Out-Null
     $sasToken = $Matches[0]
-    Write-Host "SAS token          : $sasToken"
+    Write-Host "SAS token:                      $sasToken"
 
-    $sourceContext = New-AzStorageContext -StorageAccountName $SourceStorageAccountName -SASToken $sasToken -ErrorAction Stop
+    $sourceContext = New-AzStorageContext -StorageAccountName $sourceStorageAccountName -SASToken $sasToken -ErrorAction Stop
 
     $destinationStorageAccount = Get-AzStorageAccount -ResourceGroupName $DestinationResourceGroupName -Name $DestinationStorageAccountName 
     $destinationContext = $destinationStorageAccount.Context 
@@ -1561,8 +1561,22 @@ function Copy-BlobsWithSas{
         Write-Host "All blobs in $DestinationContainerName should be removed."    
     }
 
-    Write-Host "Start copy blobs"
-    Get-AzStorageBlob -Container $SourceContainerName -Context $sourceContext | Start-AzStorageBlobCopy -DestContainer $DestinationContainerName  -Context $destinationContext -Force
+    Write-Host "Start copy blob(s)"
+    if ($blobCopy){
+        Get-AzStorageBlob -Container $sourceContainerName -Context $sourceContext -Blob $blob | Start-AzStorageBlobCopy -DestContainer $DestinationContainerName  -Context $destinationContext -Force
+        $blobInfo = Get-AzStorageBlob -Container $DestinationContainerName -Context $destinationContext -Blob $blob
+        Write-Host "Blob size: $($blobInfo.Length)"
+        [Console]::Write("Copying.")
+        while ($blobInfo.Length -eq 0) {
+            Start-Sleep -s 1
+            $blobInfo = Get-AzStorageBlob -Container $DestinationContainerName -Context $destinationContext -Blob $blob
+            [Console]::Write(".")
+        }
+        [Console]::WriteLine("")
+    } else {
+        Get-AzStorageBlob -Container $sourceContainerName -Context $sourceContext | Start-AzStorageBlobCopy -DestContainer $DestinationContainerName  -Context $destinationContext -Force
+    }
+
     Write-Host "Copy-BlobsWithSas finished"
 }
 
