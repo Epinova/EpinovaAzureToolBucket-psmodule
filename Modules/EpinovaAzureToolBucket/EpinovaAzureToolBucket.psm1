@@ -1457,6 +1457,115 @@ function Copy-Blobs{
     Write-Host "Copy-Blobs finished"
 }
 
+function Copy-BlobsWithSas{
+    <#
+    .SYNOPSIS
+        Copy all blobs from a StorageAccount container to another using SAS token to the source container.
+
+    .DESCRIPTION
+        Copy all blobs from a StorageAccount container to another using SAS token to the source container.
+
+    .PARAMETER SourceSasLink
+        The SAS link for the source blob container.
+
+    .PARAMETER SourceContainerName
+        The source container where the blobs exist.
+
+    .PARAMETER DestinationSubscriptionId
+        Your Azure SubscriptionId where you want to upload your blobs.
+
+    .PARAMETER DestinationResourceGroupName
+        The destination group name where the blobs should be moved.
+
+    .PARAMETER DestinationStorageAccountName
+        The destination StorageAccount where the blobs should be moved.
+
+    .PARAMETER DestinationContainerName
+        The destination container name where the blobs should be moved.
+
+    .PARAMETER CleanBeforeCopy
+        Set to true if you want thw script to remove all blobs in destination container before we start copy over all blobs.
+
+    .EXAMPLE
+        Copy-BlobsWithSas -SourceSasLink $SourceSasLink -SourceContainerName $SourceContainerName -DestinationSubscriptionId $DestinationSubscriptionId -DestinationResourceGroupName $DestinationResourceGroupName -DestinationStorageAccountName $DestinationStorageAccountName -DestinationContainerName $DestinationContainerName 
+        Copy-BlobsWithSas -SourceSasLink $SourceSasLink -SourceStorageAccountName $SourceStorageAccountName -DestinationSubscriptionId $DestinationSubscriptionId -DestinationResourceGroupName $DestinationResourceGroupName -DestinationStorageAccountName $DestinationStorageAccountName -DestinationContainerName $DestinationContainerName 
+    #>
+    [CmdletBinding()]
+    param(
+
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [string] $SourceSasLink,
+
+        # [Parameter(Mandatory = $true)]
+        # [ValidateNotNullOrEmpty()]
+        # [string] $SourceStorageAccountName,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [string] $SourceContainerName,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [string] $DestinationSubscriptionId,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [string] $DestinationResourceGroupName,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [string] $DestinationStorageAccountName,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [string] $DestinationContainerName,
+
+        [Parameter(Mandatory = $false)]
+        [bool] $CleanBeforeCopy
+    )
+
+    $SubscriptionId = $DestinationSubscriptionId
+    Connect-AzureSubscriptionAccount
+
+    Write-Host "Copy-BlobsWithSas - Inputs:----------------------------"
+    Write-Host "SourceSasLink:                  $SourceSasLink"
+    #Write-Host "SourceStorageAccountName:       $SourceStorageAccountName"
+    Write-Host "SourceContainerName:            $SourceContainerName"
+    Write-Host "DestinationSubscriptionId:      $DestinationSubscriptionId"
+    Write-Host "DestinationResourceGroupName:   $DestinationResourceGroupName"
+    Write-Host "DestinationStorageAccountName:  $DestinationStorageAccountName"
+    Write-Host "DestinationContainerName:       $DestinationContainerName"
+    Write-Host "CleanBeforeCopy:                $CleanBeforeCopy"
+    Write-Host "------------------------------------------------"
+
+
+    $fullSasLink = $SourceSasLink
+    $fullSasLink -match "https:\/\/(.*).blob.core" | Out-Null
+    $SourceStorageAccountName = $Matches[1]
+    Write-Host "SourceStorageAccountName:       $SourceStorageAccountName"
+
+    $fullSasLink -match "(\?.*)" | Out-Null
+    $sasToken = $Matches[0]
+    Write-Host "SAS token          : $sasToken"
+
+    $sourceContext = New-AzStorageContext -StorageAccountName $SourceStorageAccountName -SASToken $sasToken -ErrorAction Stop
+
+    $destinationStorageAccount = Get-AzStorageAccount -ResourceGroupName $DestinationResourceGroupName -Name $DestinationStorageAccountName 
+    $destinationContext = $destinationStorageAccount.Context 
+
+    if ($true -eq $CleanBeforeCopy){
+        Write-Host "Start remove all blobs in $DestinationContainerName."    
+        (Get-AzStorageBlob -Container $DestinationContainerName -Context $destinationContext | Sort-Object -Property LastModified -Descending) | Remove-AzStorageBlob
+        Write-Host "All blobs in $DestinationContainerName should be removed."    
+    }
+
+    Write-Host "Start copy blobs"
+    Get-AzStorageBlob -Container $SourceContainerName -Context $sourceContext | Start-AzStorageBlobCopy -DestContainer $DestinationContainerName  -Context $destinationContext -Force
+    Write-Host "Copy-BlobsWithSas finished"
+}
+
 function New-AzureDevOpsProject{
     <#
     .SYNOPSIS
@@ -1909,4 +2018,4 @@ function Import-BacpacDatabase{
     Set-AzSqlDatabase -ResourceGroupName $ResourceGroupName -DatabaseName $SqlDatabaseName -ServerName $SqlServerName -RequestedServiceObjectiveName $SqlSku #-Edition "Standard"
  }
 
- Export-ModuleMember -Function @( 'New-OptimizelyCmsResourceGroup', 'New-OptimizelyCmsResourceGroupBicep', 'Get-OptimizelyCmsConnectionStrings', 'New-EpiserverCmsResourceGroup', 'Get-EpiserverCmsConnectionStrings', 'Add-AzureDatabaseUser', 'Backup-Database', 'Copy-Database', 'Import-BacpacDatabase', 'Remove-Blobs', 'Copy-Blobs', 'New-AzureDevOpsProject', 'Send-Blob', 'Send-BlobAsConnected' )
+ Export-ModuleMember -Function @( 'New-OptimizelyCmsResourceGroup', 'New-OptimizelyCmsResourceGroupBicep', 'Get-OptimizelyCmsConnectionStrings', 'New-EpiserverCmsResourceGroup', 'Get-EpiserverCmsConnectionStrings', 'Add-AzureDatabaseUser', 'Backup-Database', 'Copy-Database', 'Import-BacpacDatabase', 'Remove-Blobs', 'Copy-Blobs', 'Copy-BlobsWithSas', 'New-AzureDevOpsProject', 'Send-Blob', 'Send-BlobAsConnected' )
