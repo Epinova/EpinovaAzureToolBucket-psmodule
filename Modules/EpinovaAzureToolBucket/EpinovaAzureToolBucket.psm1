@@ -1551,8 +1551,16 @@ function Copy-BlobsWithSas{
     Write-Host "SAS token:                      $sasToken"
 
     $sourceContext = New-AzStorageContext -StorageAccountName $sourceStorageAccountName -SASToken $sasToken -ErrorAction Stop
+    if ($null -eq $sourceContext) {
+        Write-Error "Could not create a context against source storage account $sourceStorageAccountName"
+        exit
+    }
 
-    $destinationStorageAccount = Get-AzStorageAccount -ResourceGroupName $DestinationResourceGroupName -Name $DestinationStorageAccountName 
+    $destinationStorageAccount = Get-AzStorageAccount -ResourceGroupName $DestinationResourceGroupName -Name $DestinationStorageAccountName
+    if ($null -eq $destinationStorageAccount) {
+        Write-Error "Could not create a context against destination storage account $DestinationStorageAccountName"
+        exit
+    }
     $destinationContext = $destinationStorageAccount.Context 
 
     if ($true -eq $CleanBeforeCopy){
