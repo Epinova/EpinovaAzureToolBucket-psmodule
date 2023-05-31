@@ -67,7 +67,7 @@ param tags object = {}
 
 var uniqueName = take(toLower('${projectName}-${uniqueString('${subscription().id}${projectName}')}'), 19)
 
-param location string = deployment().location
+param location string // = deployment().location
 
 resource resourceGroup 'Microsoft.Resources/resourceGroups@2021-04-01' = {
   name: toLower('rg-${uniqueName}-${environmentName}')
@@ -131,7 +131,7 @@ module web 'Modules/web.bicep' = {
     useApplicationInsight: useApplicationInsight
     environmentName: environmentName
     databaseConnectionStrings: {
-      'EPiServerDB': 'Server=tcp:${sql.outputs.fullyQualifiedDomainName},1433;Initial Catalog=sqldb-${projectName}-${episerverDbName}-${environmentName};User Id=${sqlserverAdminLogin};Password=${sqlserverAdminLoginPassword};Trusted_Connection=False;Encrypt=True;Connection Timeout=30;MultipleActiveResultSets=True'
+      EPiServerDB: 'Server=tcp:${sql.outputs.fullyQualifiedDomainName},1433;Initial Catalog=sqldb-${projectName}-${episerverDbName}-${environmentName};User Id=${sqlserverAdminLogin};Password=${sqlserverAdminLoginPassword};Trusted_Connection=False;Encrypt=True;Connection Timeout=30;MultipleActiveResultSets=True'
     }
     serviceBusId: servicebus.outputs.id
     serviceBusName: servicebus.outputs.name

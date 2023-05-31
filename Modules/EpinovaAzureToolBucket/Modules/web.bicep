@@ -64,7 +64,7 @@ var suffix = toLower('${projectName}-${environmentName}')
 
 resource appPlan 'Microsoft.Web/serverfarms@2021-02-01' = {
   name: 'plan-${suffix}'
-  location: resourceGroup().location
+  location: location
   kind: netVersion != 'v4.8' ? 'linux' : 'windows'
   sku: {
     name: appPlanSku
@@ -119,9 +119,9 @@ resource ai 'Microsoft.Insights/components@2020-02-02' = if (useApplicationInsig
 }
 
 var environments = {
-  'inte': 'Integration'
-  'prep': 'PreProduction'
-  'prod': 'Production'
+  inte: 'Integration'
+  prep: 'PreProduction'
+  prod: 'Production'
 }
 
 var aiAppsettings = useApplicationInsight ? [
