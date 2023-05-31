@@ -126,7 +126,7 @@ var environments = {
 
 var aiAppsettings = useApplicationInsight ? [
   {
-    name: APPINSIGHTS_INSTRUMENTATIONKEY
+    name: 'APPINSIGHTS_INSTRUMENTATIONKEY'
     value: reference(ai.id).InstrumentationKey
   }
   {
