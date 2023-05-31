@@ -504,6 +504,7 @@ function New-OptimizelyCmsResourceGroupBicep {
         "sqlserverAdminLogin"         = $DatabaseLogin
         "sqlserverAdminLoginPassword" = $DatabasePassword #$databasePasswordSecureString
         "useApplicationInsight"       = $UseApplicationInsight
+        "location"                    = $Location
         "tags"                        = $Tags
     };
 

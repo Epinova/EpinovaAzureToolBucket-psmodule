@@ -43,7 +43,7 @@ $Tags = @{
 ```
 
 ### Location
-The location where the resource group should be hosted. Default = "westeurope". You can get a complete list of location by using ```Get-AzureRmLocation |Format-Table```.
+The location where the resource group should be hosted. Default = "westeurope". You can get a complete list of location by using ```Get-AzureRmLocation |Format-Table``` or ```az account list-locations -o table```.
 
 ### UseApplicationInsight
 If ApplicationInsight should be setup in the resource group or not.
