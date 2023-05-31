@@ -99,6 +99,7 @@ module sql 'Modules/sql.bicep' = {
     sqlserverAdminLogin: sqlserverAdminLogin
     sqlserverAdminLoginPassword: sqlserverAdminLoginPassword
     ownFirewallRules: firewallRules
+    location: location
   }
   scope: resourceGroup
 }
@@ -108,6 +109,7 @@ module servicebus 'Modules/servicebus.bicep' = {
   params: {
     environmentName: environmentName
     projectName: uniqueName
+    location: location
   }
   scope: resourceGroup
 }
@@ -116,6 +118,7 @@ module storage 'Modules/storage.bicep' = {
   params: {
     environmentName: environmentName
     projectName: replace(projectName, '-', '')
+    location: location
   }
   scope: resourceGroup
 }
@@ -139,6 +142,7 @@ module web 'Modules/web.bicep' = {
     storageName: storage.outputs.name
     appPlanSku: appPlanSku
     skuCapacity: skuCapacity
+    location: location
   }
   dependsOn: [
     storage

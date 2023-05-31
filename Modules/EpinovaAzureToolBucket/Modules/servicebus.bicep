@@ -3,6 +3,8 @@
 @maxLength(43)
 param projectName string
 
+param location string
+
 @description('Environment name')
 @allowed([
   'inte'
@@ -20,7 +22,7 @@ param sku string = 'Standard'
 
 resource servicebus 'Microsoft.ServiceBus/namespaces@2021-06-01-preview' = {
   name: toLower('sb-${projectName}-${environmentName}')
-  location: resourceGroup().location
+  location: location
   tags: {
     displayName: 'ServiceBus'
   }
