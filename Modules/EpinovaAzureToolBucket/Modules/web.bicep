@@ -119,9 +119,9 @@ resource ai 'Microsoft.Insights/components@2020-02-02' = if (useApplicationInsig
 }
 
 var environments = {
-  inte: 'Integration'
-  prep: 'PreProduction'
-  prod: 'Production'
+  'inte': 'Integration'
+  'prep': 'PreProduction'
+  'prod': 'Production'
 }
 
 var aiAppsettings = useApplicationInsight ? [
