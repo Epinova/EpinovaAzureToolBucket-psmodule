@@ -69,7 +69,7 @@ var uniqueName = take(toLower('${projectName}-${uniqueString('${subscription().i
 
 param location string // = deployment().location
 
-resource resourceGroup 'Microsoft.Resources/resourceGroups@2022-09-01' = {
+resource resourceGroup 'Microsoft.Resources/resourceGroups@2021-04-01' = {
   name: toLower('rg-${uniqueName}-${environmentName}')
   location: location
   tags: tags
@@ -127,7 +127,7 @@ module web 'Modules/web.bicep' = {
   name: 'web'
   params: {
     appSettings: appSettings
-    netVersion: 'v5.0'
+    netVersion: 'v7.0'
     useApplicationInsight: useApplicationInsight
     environmentName: environmentName
     databaseConnectionStrings: {
