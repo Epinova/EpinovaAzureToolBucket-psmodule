@@ -3,8 +3,6 @@
 @maxLength(54)
 param projectName string
 
-param location string
-
 @description('Environment name')
 @allowed([
   'inte'
@@ -116,7 +114,7 @@ var firewallRules = concat([
 ], ownFirewallRules)
 
 resource sqlServer 'Microsoft.Sql/servers@2021-05-01-preview' = {
-  location: location
+  location: resourceGroup().location
   name: toLower('sql-${projectName}-${environmentName}')
   properties: {
     administratorLogin: sqlserverAdminLogin
@@ -129,7 +127,7 @@ resource sqlServer 'Microsoft.Sql/servers@2021-05-01-preview' = {
 
   resource sqlDatabases 'databases@2021-05-01-preview' = [for sqlDatabaseName in sqlDatabaseNames: {
     name: toLower('sqldb-${projectName}-${sqlDatabaseName}-${environmentName}')
-    location: location
+    location: resourceGroup().location
     sku: {
       name: skus[sku].name
       tier: skus[sku].tier

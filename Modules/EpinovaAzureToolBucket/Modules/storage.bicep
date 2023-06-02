@@ -3,8 +3,6 @@
 @maxLength(18)
 param projectName string
 
-param location string
-
 @description('Environment name')
 @allowed([
   'inte'
@@ -37,7 +35,7 @@ param containersToCreate array = [
 ]
 resource storage 'Microsoft.Storage/storageAccounts@2021-06-01' = {
   name: toLower('st${projectName}${environmentName}')
-  location: location
+  location: resourceGroup().location
   sku: {
     name: sku
   }

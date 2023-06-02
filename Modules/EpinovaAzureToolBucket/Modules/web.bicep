@@ -3,8 +3,6 @@
 @maxLength(30)
 param projectName string
 
-param location string
-
 @description('Environment name')
 @allowed([
   'inte'
@@ -64,7 +62,7 @@ var suffix = toLower('${projectName}-${environmentName}')
 
 resource appPlan 'Microsoft.Web/serverfarms@2021-02-01' = {
   name: 'plan-${suffix}'
-  location: location
+  location: resourceGroup().location
   kind: netVersion != 'v4.8' ? 'linux' : 'windows'
   sku: {
     name: appPlanSku
@@ -83,7 +81,7 @@ var databaseConnectionStringsArray = [for item in items(databaseConnectionString
 
 resource web 'Microsoft.Web/sites@2021-02-01' = {
   name: 'app-${suffix}'
-  location: location
+  location: resourceGroup().location
   properties: {
     serverFarmId: appPlan.id
     siteConfig: {
@@ -108,7 +106,7 @@ resource web 'Microsoft.Web/sites@2021-02-01' = {
 
 resource ai 'Microsoft.Insights/components@2020-02-02' = if (useApplicationInsight) {
   name: 'ai-${suffix}'
-  location: location
+  location: resourceGroup().location
   kind: 'web'
   tags: {
     'hidden-link:${web.id}': 'Resource'

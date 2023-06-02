@@ -67,7 +67,7 @@ param tags object = {}
 
 var uniqueName = take(toLower('${projectName}-${uniqueString('${subscription().id}${projectName}')}'), 19)
 
-param location string // = deployment().location
+param location string = deployment().location
 
 resource resourceGroup 'Microsoft.Resources/resourceGroups@2021-04-01' = {
   name: toLower('rg-${uniqueName}-${environmentName}')
@@ -99,7 +99,6 @@ module sql 'Modules/sql.bicep' = {
     sqlserverAdminLogin: sqlserverAdminLogin
     sqlserverAdminLoginPassword: sqlserverAdminLoginPassword
     ownFirewallRules: firewallRules
-    location: location
   }
   scope: resourceGroup
 }
@@ -109,7 +108,6 @@ module servicebus 'Modules/servicebus.bicep' = {
   params: {
     environmentName: environmentName
     projectName: uniqueName
-    location: location
   }
   scope: resourceGroup
 }
@@ -118,7 +116,6 @@ module storage 'Modules/storage.bicep' = {
   params: {
     environmentName: environmentName
     projectName: replace(uniqueName, '-', '')
-    location: location
   }
   scope: resourceGroup
 }
@@ -142,7 +139,6 @@ module web 'Modules/web.bicep' = {
     storageName: storage.outputs.name
     appPlanSku: appPlanSku
     skuCapacity: skuCapacity
-    location: location
   }
   dependsOn: [
     storage
