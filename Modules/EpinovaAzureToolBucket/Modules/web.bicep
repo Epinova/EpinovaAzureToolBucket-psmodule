@@ -87,7 +87,7 @@ resource web 'Microsoft.Web/sites@2022-09-01' = {
   properties: {
     serverFarmId: appPlan.id
     siteConfig: {
-      linuxFxVersion: netVersion != 'v4.8' ? 'DOTNETCORE|8.0' : null
+      linuxFxVersion: 'DOTNETCORE|${skip(netVersion,1)}'
       netFrameworkVersion: netVersion
       http20Enabled: true
       webSocketsEnabled: true
