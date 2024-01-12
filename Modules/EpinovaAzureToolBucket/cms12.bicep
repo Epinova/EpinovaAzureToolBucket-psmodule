@@ -124,7 +124,7 @@ module web 'Modules/web.bicep' = {
   name: 'web'
   params: {
     appSettings: appSettings
-    netVersion: 'v5.0'
+    netVersion: 'v8.0'
     useApplicationInsight: useApplicationInsight
     environmentName: environmentName
     databaseConnectionStrings: {
