@@ -81,13 +81,13 @@ var databaseConnectionStringsArray = [for item in items(databaseConnectionString
   type: 'SQLAzure'
 }]
 
-resource web 'Microsoft.Web/sites@2021-02-01' = {
+resource web 'Microsoft.Web/sites@2022-09-01' = {
   name: 'app-${suffix}'
   location: resourceGroup().location
   properties: {
     serverFarmId: appPlan.id
     siteConfig: {
-      linuxFxVersion: netVersion != 'v4.8' ? 'DOTNETCORE|${netVersion}' : null
+      linuxFxVersion: netVersion != 'v4.8' ? 'DOTNETCORE|8.0' : null
       netFrameworkVersion: netVersion
       http20Enabled: true
       webSocketsEnabled: true
