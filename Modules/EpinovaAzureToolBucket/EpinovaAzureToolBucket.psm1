@@ -501,6 +501,7 @@ function New-OptimizelyCmsResourceGroupBicep {
     $Parameters = @{
         "projectName"                 = $ResourceGroupName
         "environmentName"             = $Environment
+        "location"                    = $Location
         "sqlserverAdminLogin"         = $DatabaseLogin
         "sqlserverAdminLoginPassword" = $DatabasePassword #$databasePasswordSecureString
         "useApplicationInsight"       = $UseApplicationInsight
