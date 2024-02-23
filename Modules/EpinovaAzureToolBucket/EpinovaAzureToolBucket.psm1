@@ -485,6 +485,7 @@ function New-OptimizelyCmsResourceGroupBicep {
     Write-Host "UseApplicationInsight:           $UseApplicationInsight"
     Write-Host "SqlSku:                          $SqlSku"
     Write-Host "AppPlanSku:                      $AppPlanSku"
+    Write-Host "UseDeviceAuthentication:         $UseDeviceAuthentication"
     Write-Host "------------------------------------------------"
 
 
