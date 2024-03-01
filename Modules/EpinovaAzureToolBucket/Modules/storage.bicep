@@ -26,14 +26,14 @@ param sku string = 'Standard_LRS'
 param containersToCreate array = [
   {
     name: 'mysitemedia'
-    publicAccess: 'Container'
+    publicAccess: 'None'
   }
   {
     name: 'db-backups'
     publicAccess: 'None'
   }
 ]
-resource storage 'Microsoft.Storage/storageAccounts@2021-06-01' = {
+resource storage 'Microsoft.Storage/storageAccounts@2023-01-01' = {
   name: toLower('st${projectName}${environmentName}')
   location: resourceGroup().location
   sku: {
@@ -41,10 +41,10 @@ resource storage 'Microsoft.Storage/storageAccounts@2021-06-01' = {
   }
   kind: 'StorageV2'
 
-  resource blob 'blobServices@2021-06-01' = {
+  resource blob 'blobServices@2023-01-01' = {
     name: 'default'
 
-    resource containers 'containers@2021-06-01' = [for container in containersToCreate: {
+    resource containers 'containers@2023-01-01' = [for container in containersToCreate: {
       name: container.name
       properties: {
         publicAccess: container.publicAccess
