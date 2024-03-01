@@ -418,8 +418,10 @@ function New-OptimizelyCmsResourceGroupBicep {
         Specifies which SQL SKU you want to generate. If not specified it will create a "basic" SQL Server. Allowed SKU 'Free', 'Basic', 'S0', 'S1', 'P1', 'P2', 'GP_Gen4_1', 'GP_S_Gen5_1', 'GP_Gen5_2', 'GP_S_Gen5_2', 'BC_Gen4_1', 'BC_Gen5_4'
     .PARAMETER AppPlanSku
         Specifies which AppPlan SKU you want to generate. If not specified it will create a "F1" plan will be created. Allowed SKU 'F1', 'D1', 'B1', 'B2', 'B3', 'S1', 'S2', 'S3', 'P1', 'P2', 'P3', 'P4'
+    .PARAMETER UseAuthentication
+        If Authentication should be run within the function this should be set to true. Default is true. You may want to use set this to false if you have already authenticated in another context/script and do not need to authenticate.
     .EXAMPLE
-        New-OptimizelyCmsResourceGroupBicep -SubscriptionId '95a9fd36-7851-4918-b8c9-f146a219982c' -ResourceGroupName 'mycoolwebsite' -Environment "inte" -DatabaseLogin "databasedbuser" -DatabasePassword 'KXIN_rhxh3holt_s8it' -CmsVersion "12" -Tags @{ "Environment"="dev";"Owner"="ove.lartelius@epinova.se";"App"="Optimizely";"Client"="Client name";"Project"="Project name";"ManagedBy"="Ove Lartelius";"Cost"="Internal";"Department"="IT";"Expires"="";  } -Location = "westeurope" -UseApplicationInsight $true 
+        New-OptimizelyCmsResourceGroupBicep -SubscriptionId '95a9fd36-7851-4918-b8c9-f146a219982c' -ResourceGroupName 'mycoolwebsite' -Environment "inte" -DatabaseLogin "databasedbuser" -DatabasePassword 'KXIN_rhxh3holt_s8it' -CmsVersion "12" -Tags @{ "Environment"="dev";"Owner"="ove.lartelius@epinova.se";"App"="Optimizely";"Client"="Client name";"Project"="Project name";"ManagedBy"="Ove Lartelius";"Cost"="Internal";"Department"="IT";"Expires"="";  } -Location = "westeurope" -UseApplicationInsight $true -UseAuthentication $true
     #>
     [CmdletBinding()]
     param(
@@ -464,8 +466,10 @@ function New-OptimizelyCmsResourceGroupBicep {
         [string] $SqlSku,
 
         [Parameter(Mandatory = $false)]
-        [string] $AppPlanSku
+        [string] $AppPlanSku,
 
+        [Parameter(Mandatory = $false)]
+        [bool] $UseAuthentication = $true
     )
 
     $TagsString = $Tags | Out-String
@@ -492,13 +496,15 @@ function New-OptimizelyCmsResourceGroupBicep {
     ##############################################################
 
     # Login to Azure
-    if ($UseDeviceAuthentication) {
-        Connect-AzAccount -SubscriptionId $SubscriptionId -UseDeviceAuthentication
-    } else {
-        Connect-AzAccount -SubscriptionId $SubscriptionId
+    if ($UseAuthentication)
+    {
+        if ($UseDeviceAuthentication) {
+            Connect-AzAccount -SubscriptionId $SubscriptionId -UseDeviceAuthentication
+        } else {
+            Connect-AzAccount -SubscriptionId $SubscriptionId
+        }
     }
     
-
     $Parameters = @{
         "projectName"                 = $ResourceGroupName
         "environmentName"             = $Environment

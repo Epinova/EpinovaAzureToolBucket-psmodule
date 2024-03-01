@@ -1,3 +1,5 @@
+targetScope='subscription'
+
 @description('Lowercase letters, numbers')
 @minLength(1)
 @maxLength(43)
