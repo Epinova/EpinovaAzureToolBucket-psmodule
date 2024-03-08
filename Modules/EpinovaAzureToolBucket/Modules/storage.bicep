@@ -40,6 +40,10 @@ resource storage 'Microsoft.Storage/storageAccounts@2023-01-01' = {
     name: sku
   }
   kind: 'StorageV2'
+  properties: {
+    minimumTlsVersion: 'TLS1_2'
+    supportsHttpsTrafficOnly: true
+  }
 
   resource blob 'blobServices@2023-01-01' = {
     name: 'default'
