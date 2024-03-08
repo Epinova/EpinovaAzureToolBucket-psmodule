@@ -116,6 +116,7 @@ resource ai 'Microsoft.Insights/components@2020-02-02' = if (useApplicationInsig
   }
   properties: {
     Application_Type: 'web'
+    WorkspaceResourceId: '112dc198-6bd0-4693-ac09-9159b41b487a' // rg-defloganalytics-qw2-inte.defaultworkspace-swedencentral
   }
 }
 
