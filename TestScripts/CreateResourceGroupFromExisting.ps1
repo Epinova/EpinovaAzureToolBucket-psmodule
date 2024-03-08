@@ -3,9 +3,9 @@ Remove-Module -Name "EpinovaAzureToolBucket" -Verbose
 Import-Module -Name E:\dev\EpinovaAzureToolBucket-psmodule\Modules\EpinovaAzureToolBucket -Verbose
 
 $subscriptionId = "e872f180-979f-4374-aff7-3bbcffcb7f89" #Epinova-Sweden-Inte
-$existingResourceGroupName = "rg-ove6-cyss6lix3f4wi-inte"
-$newResourceGroupName = "rg-ove6-cyss6lix3f4wix-inte"
-$newLocation = "swedencentral"
+$ExistingResourceGroupName = "rg-ove6-cyss6lix3f4wi-inte"
+$NewResourceGroupName = "rg-ove6-cyss6lix3f4wix-inte"
+$NewResourceGroupLocation = "swedencentral"
 
 $azureConnection = $null
 if($null -eq $azureConnection -or $null -eq $azureConnection.Account){
@@ -24,12 +24,12 @@ $azureConnection
 $azureContext = Set-AzContext –SubscriptionId $subscriptionId
 $azureContext
 
-$existingResourceGroup = Get-AzResourceGroup -Name $existingResourceGroupName
-Write-Output "Found existing resource group $newResourceGroupName"
+$existingResourceGroup = Get-AzResourceGroup -Name $ExistingResourceGroupName
+Write-Output "Found existing resource group $NewResourceGroupName"
 $existingResourceGroupTags = $existingResourceGroup.Tags
 $tagsString = $existingResourceGroupTags | Out-String
 Write-Output "Tags: $tagsString"
 
 # Create 
-Write-Output "Create new Azure ResourceGroup -Name $newResourceGroupName -Location $newLocation"
-New-AzResourceGroup -Name $newResourceGroupName -Location $newLocation -Tag $existingResourceGroupTags
+Write-Output "Create new Azure ResourceGroup -Name $NewResourceGroupName -Location $NewResourceGroupLocation"
+New-AzResourceGroup -Name $NewResourceGroupName -Location $NewResourceGroupLocation -Tag $existingResourceGroupTags

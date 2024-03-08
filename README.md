@@ -4,6 +4,10 @@ Note: This is a very early stage and has only been tested on Epinovas Azure port
 
 [How to create resource groups example](Documentation/CreateResourceGroup/CreateResourceGroup.md)
 
+## New-ResourceGroupTagsFromExisting
+Create a new resource group in Azure and copy tags from a existing resource group.
+[Documentation](Documentation/New-ResourceGroupTagsFromExisting/New-OptimizelyCmsResourceGroup.md)
+
 ## New-OptimizelyCmsResourceGroup
 Create a Optimizely CMS resource group in Azure.  
 [Documentation](Documentation/New-OptimizelyCmsResourceGroup/New-OptimizelyCmsResourceGroup.md)

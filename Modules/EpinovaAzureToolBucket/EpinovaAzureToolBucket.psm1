@@ -257,6 +257,81 @@ function Unpublish-Database{
 }
 
 # END PRIVATE METHODS
+
+function New-ResourceGroupTagsFromExisting{
+    <#
+    .SYNOPSIS
+        Create a new resource group in Azure and copy tags from a existing resource group.
+
+    .DESCRIPTION
+        Create a new resource group in Azure and copy tags from a existing resource group.
+
+    .PARAMETER SubscriptionId
+        Your Azure SubscriptionId that you want to create the new resource group in.
+
+    .PARAMETER ExistingResourceGroupName
+        The name of the existing resource group that contains the tags that will be copied to the new resource group.
+
+    .PARAMETER NewResourceGroupName
+        The name of the new resource group that will be created.
+
+    .PARAMETER NewResourceGroupLocation
+        The location where the resource group should be hosted. Default = "swedencentral". You can get a complete list of location by using "Get-AzureRmLocation |Format-Table".
+
+    .EXAMPLE
+        New-ResourceGroupTagsFromExisting -SubscriptionId $SubscriptionId -ExistingResourceGroupName $ExistingResourceGroupName -NewResourceGroupName $NewResourceGroupName -NewResourceGroupLocation $NewResourceGroupLocation
+
+    .EXAMPLE
+        New-ResourceGroupTagsFromExisting -SubscriptionId '95a9fd36-7851-4918-b8c9-f146a219982c' -ExistingResourceGroupName 'myoldresourcegroupname' -NewResourceGroupName 'mynewresourcegroupname' -NewResourceGroupLocation 'swedencentral'" 
+
+    .EXAMPLE
+        New-ResourceGroupTagsFromExisting -SubscriptionId '95a9fd36-7851-4918-b8c9-f146a219982c' -ExistingResourceGroupName 'myoldresourcegroupname' -NewResourceGroupName 'mynewresourcegroupname'" 
+
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [string] $SubscriptionId,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [string] $ExistingResourceGroupName,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [string] $NewResourceGroupName,
+
+        [Parameter(Mandatory = $false)]
+        [string] $NewResourceGroupLocation = "swedencentral"
+    )
+
+    Write-Host "New-ResourceGroupTagsFromExisting - Inputs:----------"
+    Write-Host "SubscriptionId:             $SubscriptionId"
+    Write-Host "ExistingResourceGroupName:  $ExistingResourceGroupName"
+    Write-Host "NewResourceGroupName:       $NewResourceGroupName"
+    Write-Host "NewResourceGroupLocation:   $NewResourceGroupLocation"
+    Write-Host "------------------------------------------------"
+
+    ##############################################################
+
+    # Login to Azure
+    Connect-AzAccount -SubscriptionId $SubscriptionId
+
+    $azureContext = Set-AzContext –SubscriptionId $subscriptionId
+    $azureContext
+    
+    $existingResourceGroup = Get-AzResourceGroup -Name $ExistingResourceGroupName
+    Write-Output "Found existing resource group $NewResourceGroupName"
+    $existingResourceGroupTags = $existingResourceGroup.Tags
+    $tagsString = $existingResourceGroupTags | Out-String
+    Write-Output "Tags: $tagsString"
+    
+    # Create 
+    Write-Output "Create new Azure ResourceGroup -Name $NewResourceGroupName -Location $NewResourceGroupLocation"
+    New-AzResourceGroup -Name $NewResourceGroupName -Location $NewResourceGroupLocation -Tag $existingResourceGroupTags
+}
+
 function New-OptimizelyCmsResourceGroup{
     <#
     .SYNOPSIS
@@ -2049,4 +2124,4 @@ function Import-BacpacDatabase{
     Set-AzSqlDatabase -ResourceGroupName $ResourceGroupName -DatabaseName $SqlDatabaseName -ServerName $SqlServerName -RequestedServiceObjectiveName $SqlSku #-Edition "Standard"
  }
 
- Export-ModuleMember -Function @( 'New-OptimizelyCmsResourceGroup', 'New-OptimizelyCmsResourceGroupBicep', 'Get-OptimizelyCmsConnectionStrings', 'New-EpiserverCmsResourceGroup', 'Get-EpiserverCmsConnectionStrings', 'Add-AzureDatabaseUser', 'Backup-Database', 'Copy-Database', 'Import-BacpacDatabase', 'Remove-Blobs', 'Copy-Blobs', 'Copy-BlobsWithSas', 'New-AzureDevOpsProject', 'Send-Blob', 'Send-BlobAsConnected' )
+ Export-ModuleMember -Function @( 'New-ResourceGroupTagsFromExisting', 'New-OptimizelyCmsResourceGroup', 'New-OptimizelyCmsResourceGroupBicep', 'Get-OptimizelyCmsConnectionStrings', 'New-EpiserverCmsResourceGroup', 'Get-EpiserverCmsConnectionStrings', 'Add-AzureDatabaseUser', 'Backup-Database', 'Copy-Database', 'Import-BacpacDatabase', 'Remove-Blobs', 'Copy-Blobs', 'Copy-BlobsWithSas', 'New-AzureDevOpsProject', 'Send-Blob', 'Send-BlobAsConnected' )
