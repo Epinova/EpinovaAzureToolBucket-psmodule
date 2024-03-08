@@ -62,6 +62,7 @@ param skuCapacity int = 1
 param appSettings array = []
 
 param useApplicationInsight bool = false
+param useDefaultLogAnalyticsWorkspace bool = false
 
 param tags object = {}
 

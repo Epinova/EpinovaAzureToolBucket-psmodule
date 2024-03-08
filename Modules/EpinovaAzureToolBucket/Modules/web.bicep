@@ -107,6 +107,22 @@ resource web 'Microsoft.Web/sites@2022-09-01' = {
   }
 }
 
+//var workspaceResourceId = '/subscriptions/e872f180-979f-4374-aff7-3bbcffcb7f89/resourceGroups/rg-defloganalytics-qw2-inte/providers/Microsoft.OperationalInsights/workspaces/defaultworkspace-swedencentral'
+
+resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2020-08-01' = if (useApplicationInsight) {
+  name: 'law-${suffix}'
+  location: resourceGroup().location
+  properties: {
+    sku: {
+      name: 'PerGB2018'
+    }
+    retentionInDays: 30
+    // Add any additional properties needed for your Log Analytics workspace
+  }
+}
+
+//if (useDefaultLogAnalyticsWorkspace)
+
 resource ai 'Microsoft.Insights/components@2020-02-02' = if (useApplicationInsight) {
   name: 'ai-${suffix}'
   location: resourceGroup().location
@@ -116,7 +132,7 @@ resource ai 'Microsoft.Insights/components@2020-02-02' = if (useApplicationInsig
   }
   properties: {
     Application_Type: 'web'
-    WorkspaceResourceId: '112dc198-6bd0-4693-ac09-9159b41b487a' // rg-defloganalytics-qw2-inte.defaultworkspace-swedencentral
+    WorkspaceResourceId: logAnalyticsWorkspace.id
   }
 }
 
