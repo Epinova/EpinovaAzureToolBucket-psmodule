@@ -1,9 +1,9 @@
 name: Publish PowerShell Module
 
 on:
-  # push:
-  #   branches:
-  #     - main  # Change this to your main branch
+  push:
+    branches:
+      - feature/**
   workflow_dispatch:
 
 jobs:
@@ -27,15 +27,15 @@ jobs:
           Write-Output "Module Version: $version"
           echo "MODULE_VERSION=$version" | Out-File -FilePath $env:GITHUB_ENV -Append
 
-      - name: Publish PowerShell Module
-        shell: pwsh
-        run: |
-          $ApiKey = "${{ secrets.POWERSHELL_GALLERY_API_KEY }}"
-          Publish-Module -Path "Modules/EpinovaAzureToolBucket" -NuGetApiKey $ApiKey
-        env:
-          POWERSHELL_GALLERY_API_KEY: ${{ secrets.POWERSHELL_GALLERY_API_KEY }}
+      # - name: Publish PowerShell Module
+      #   shell: pwsh
+      #   run: |
+      #     $ApiKey = "${{ secrets.POWERSHELL_GALLERY_API_KEY }}"
+      #     Publish-Module -Path "Modules/EpinovaAzureToolBucket" -NuGetApiKey $ApiKey
+      #   env:
+      #     POWERSHELL_GALLERY_API_KEY: ${{ secrets.POWERSHELL_GALLERY_API_KEY }}
 
-      - name: Create Git Tag
-        run: |
-          git tag "v${MODULE_VERSION}"
-          git push origin "v${MODULE_VERSION}"          
+      # - name: Create Git Tag
+      #   run: |
+      #     git tag "v${MODULE_VERSION}"
+      #     git push origin "v${MODULE_VERSION}"          
