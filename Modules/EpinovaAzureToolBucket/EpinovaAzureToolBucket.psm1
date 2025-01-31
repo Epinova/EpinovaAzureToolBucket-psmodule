@@ -1386,6 +1386,472 @@ function Copy-Database{
 
 }
 
+function Copy-DatabaseBetweenSubscriptions{
+    <#
+    .SYNOPSIS
+        Copy a database from one place to another (between subscriptions).
+
+    .DESCRIPTION
+        Copy a database from one place to another. If the destination database exist it will be 'overwritten'. You can decide if you want to make a backup of the destination database before it is dropped.
+
+    .PARAMETER SourceSubscriptionId
+        Your Azure SubscriptionId where the source databases exist that you want to copy.
+
+    .PARAMETER SourceResourceGroup
+        The resource group name where the source database exist that we want to copy.
+
+    .PARAMETER SourceSqlServerName
+        The Sql Server that contain the database that you want to copy.
+
+    .PARAMETER SourceSqlServerUsername
+        The admin username for the source SQL server. Needed to make a export bacpac.
+
+    .PARAMETER SourceSqlServerPassword
+        The admin password for the source SQL server. Needed to make a export bacpac.
+
+    .PARAMETER SourceDatabaseName
+        Name of the database that should be copied.
+
+    .PARAMETER SourceStorageAccountResourceGroup
+        The name of the resource group where the storage account exist where the bacpac will be exported to. If not provided we will use 'SourceResourceGroup'.
+
+    .PARAMETER SourceStorageAccountName
+        Storage account name where the bacpac file will be exported.
+
+    .PARAMETER SourceStorageContainerName
+        The name of the container where the bacpac should be exported.
+
+    .PARAMETER TargetSubscriptionId
+        Your Azure SubscriptionId where the target databases exist.
+
+    .PARAMETER TargetResourceGroup
+        The resource group name where the destination database should be copied to.
+
+    .PARAMETER TargetSqlServerName
+        The destination Sql server name. If empty we will try to find the first SqlServer resource in the specified destination resource group.
+
+    .PARAMETER TargetSqlServerUsername
+        The admin username for the target SQL server. Needed to make a export/backup bacpac of existing database.
+
+    .PARAMETER TargetSqlServerPassword
+        The admin password for the source SQL server. Needed to make a export/backup bacpac of existing database.
+
+    .PARAMETER TargetDatabaseName
+        The destination database name.
+
+    .PARAMETER TargetDatabaseEditionIfNotSet
+        The edition on the target database. If there is a existing database it will be the same as before. Ex: Basic
+
+    .PARAMETER TargetDatabaseServiceObjectiveNameIfNotSet
+        The service objective name on the target database. If there is a existing database it will be the same as before. Ex:Basic
+
+    .PARAMETER TargetDatabaseMaxSizeBytesIfNotSet
+        The max size bytes on the target database. If there is a existing database it will be the same as before. Ex: 2147483648
+
+    .PARAMETER TargetStorageAccountResourceGroup
+        The name of the resource group where the storage account exist where the backup of existing database will be exported to. If not provided we will use 'TargetResourceGroup'.
+
+    .PARAMETER TargetStorageAccountName
+        Storage account name where the bacpac file will be exported.
+
+    .PARAMETER TargetStorageContainerName
+        The name of the container where the bacpac should be exported.
+
+    # .PARAMETER SqlSku
+    #     Specifies which SQL SKU you want to generate. If not specified it will create a "basic" SQL Server. Allowed SKU 'Free', 'Basic', 'S0', 'S1', 'P1', 'P2', 'GP_Gen4_1', 'GP_S_Gen5_1', 'GP_Gen5_2', 'GP_S_Gen5_2', 'BC_Gen4_1', 'BC_Gen5_4'
+
+    .EXAMPLE
+        Copy-DatabaseBetweenSubscriptions -SourceSubscriptionId $SubscriptionId -SourceResourceGroup $SourceResourceGroupName -SourceSqlServerName $SourceSqlServerName -SourceSqlDatabaseName $SourceSqlDatabaseName -DestinationResourceGroupName $DestinationResourceGroupName -DestinationSqlServerName $DestinationSqlServerName -DestinationSqlDatabaseName $DestinationSqlDatabaseName -DestinationRunDatabaseBackup $DestinationRunDatabaseBackup 
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [string] $SourceSubscriptionId,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [string] $SourceResourceGroup,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [string] $SourceSqlServerName,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [string] $SourceSqlServerUsername,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [string] $SourceSqlServerPassword,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [string] $SourceDatabaseName,
+
+        [Parameter(Mandatory = $false)]
+        [string] $SourceStorageAccountResourceGroup,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [string] $SourceStorageAccountName,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [string] $SourceStorageContainerName,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [string] $TargetSubscriptionId,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [string] $TargetResourceGroup,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [string] $TargetSqlServerName,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [string] $TargetSqlServerUsername,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [string] $TargetSqlServerPassword,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [ValidateSet('Free', 'Basic', 'S0', 'S1', 'P1', 'P2', 'GP_Gen4_1', 'GP_S_Gen5_1', 'GP_Gen5_2', 'GP_S_Gen5_2', 'BC_Gen4_1', 'BC_Gen5_4')]
+        [string] $TargetDatabaseEditionIfNotSet,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [string] $TargetDatabaseServiceObjectiveNameIfNotSet,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [string] $TargetDatabaseMaxSizeBytesIfNotSet,
+
+        [Parameter(Mandatory = $false)]
+        [string] $TargetStorageAccountResourceGroup,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [string] $TargetStorageAccountName,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [string] $TargetStorageContainerName
+
+        # [Parameter(Mandatory = $false)]
+        # [ValidateNotNullOrEmpty()]
+        # [ValidateSet('Free', 'Basic', 'S0', 'S1', 'P1', 'P2', 'GP_Gen4_1', 'GP_S_Gen5_1', 'GP_Gen5_2', 'GP_S_Gen5_2', 'BC_Gen4_1', 'BC_Gen5_4')]
+        # [string] $SqlSku = "Basic"
+    )
+
+    Get-Module -ListAvailable -Name Az.Sql
+    # #Import-Module Az.Sql
+    # Get-Command -Module Az.Sql | Where-Object { $_.Name -like "*Import*" }
+
+    # Define Variables
+    $sourceSubscriptionId = $SourceSubscriptionId
+    $sourceResourceGroup = $SourceResourceGroup
+    $sourceSqlServerName = $SourceSqlServerName
+    $sourceSqlServerUsername = $SourceSqlServerUsername
+    $sourceSqlServerPassword = $SourceSqlServerPassword
+    $sourceDatabaseName = $SourceDatabaseName
+
+    $sourceStorageAccountResourceGroup = $SourceStorageAccountResourceGroup
+    $sourceStorageAccountName = $SourceStorageAccountName
+    $sourceStorageContainerName = $SourceStorageContainerName
+    $sourceBacpacName = "$sourceDatabaseName-$(Get-Date -Format yyyyMMddHHmm).bacpac"
+
+    $targetSubscriptionId = $TargetSubscriptionId
+    $targetResourceGroup = $TargetResourceGroup
+    $targetSqlServerName = $TargetSqlServerName
+    $targetSqlServerUsername = $TargetSqlServerUsername
+    $targetSqlServerPassword = $TargetSqlServerPassword
+    $targetDatabaseName = $TargetDatabaseName
+
+    $targetDatabaseEditionIfNotSet = $TargetDatabaseEditionIfNotSet
+    $targetDatabaseServiceObjectiveNameIfNotSet = $TargetDatabaseServiceObjectiveNameIfNotSet
+    $targetDatabaseMaxSizeBytesIfNotSet = $TargetDatabaseMaxSizeBytesIfNotSet
+
+    $targetStorageAccountResourceGroup = $TargetStorageAccountResourceGroup
+    $targetStorageAccountName = $TargetStorageAccountName
+    $targetStorageContainerName = $TargetStorageContainerName
+    $targetBacpacName = "$sourceDatabaseName-$(Get-Date -Format yyyyMMddHHmm).bacpac"
+
+    if ($targetSubscriptionId -match "^\s*$"){
+        $targetSubscriptionId = $sourceSubscriptionId
+    }
+    if ($sourceStorageAccountResourceGroup -match "^\s*$"){
+        $sourceStorageAccountResourceGroup = $sourceResourceGroup
+    }
+    if ($targetStorageAccountResourceGroup -match "^\s*$"){
+        $targetStorageAccountResourceGroup = $targetResourceGroup
+    }
+
+
+    Write-Host "Copy-DatabaseBetweenSubscriptions - Inputs:----------"
+    Write-Host "Source:"
+    Write-Host "SourceSubscriptionId:               $sourceSubscriptionId"
+    Write-Host "SourceResourceGroup:                $sourceResourceGroup"
+    Write-Host "SourceSqlServerName:                $sourceSqlServerName"
+    Write-Host "SourceSqlServerUsername:            $sourceSqlServerUsername"
+    Write-Host "SourceSqlServerPassword:            **** (it is a secret...)"
+    Write-Host "SourceDatabaseName:                 $sourceDatabaseName"
+    Write-Host "SourceStorageAccountResourceGroup:  $sourceStorageAccountResourceGroup"
+    Write-Host "SourceStorageAccountName:           $sourceStorageAccountName"
+    Write-Host "SourceStorageContainerName:         $sourceStorageContainerName"
+    Write-Host "SourceBacpacName:                   $sourceBacpacName"
+    Write-Host "Target:"
+    Write-Host "TargetSubscriptionId:               $targetSubscriptionId"
+    Write-Host "TargetResourceGroup:                $targetResourceGroup"
+    Write-Host "TargetSqlServerName:                $targetSqlServerName"
+    Write-Host "TargetSqlServerUsername:            $targetSqlServerUsername"
+    Write-Host "TargetSqlServerPassword:            **** (it is a secret...)"
+    Write-Host "TargetDatabaseName:                 $targetDatabaseName"
+    Write-Host "TargetDatabaseEditionIfNotSet:      $targetDatabaseEditionIfNotSet"
+    Write-Host "TargetDatabaseService-"
+    Write-Host "  ObjectiveNameIfNotSet:            $targetDatabaseServiceObjectiveNameIfNotSet"
+    Write-Host "TargetDatabaseMaxSizeBytesIfNotSet: $targetDatabaseMaxSizeBytesIfNotSet"
+    Write-Host "TargetStorageAccountResourceGroup:  $targetStorageAccountResourceGroup"
+    Write-Host "TargetStorageAccountName:           $targetStorageAccountName"
+    Write-Host "TargetStorageContainerName:         $targetStorageContainerName"
+    Write-Host "TargetBacpacName:                   $targetBacpacName"
+    Write-Host "------------------------------------------------"
+
+    # Login to Azure
+    Write-Host "Logging in to Azure..."
+    Update-AzConfig -DefaultSubscriptionForLogin $sourceSubscriptionId
+    Connect-AzAccount
+
+    # Set source subscription
+    Write-Host "Setting source subscription..."
+    Set-AzContext -SubscriptionId $sourceSubscriptionId
+
+    # Get Storage Account Key
+    Write-Host "Fetching storage account key..."
+    $storageKey = (Get-AzStorageAccountKey -ResourceGroupName $sourceStorageAccountResourceGroup -Name $sourceStorageAccountName)[0].Value
+
+    # Get Storage Context
+    $storageContext = New-AzStorageContext -StorageAccountName $sourceStorageAccountName -StorageAccountKey $storageKey
+
+    # Export Database to Azure Storage
+    Write-Host "Exporting database to BACPAC file..."
+    $bacpacUri = "https://$sourceStorageAccountName.blob.core.windows.net/$sourceStorageContainerName/$sourceBacpacName"
+    Write-Host "Bacpac URI: $bacpacUri"
+
+    $exportOperation = New-AzSqlDatabaseExport -ResourceGroupName $sourceResourceGroup `
+        -ServerName $sourceSqlServerName `
+        -DatabaseName $sourceDatabaseName `
+        -StorageKeyType "StorageAccessKey" `
+        -StorageKey $storageKey `
+        -StorageUri $bacpacUri `
+        -AdministratorLogin $sourceSqlServerUsername `
+        -AdministratorLoginPassword (ConvertTo-SecureString $sourceSqlServerPassword -AsPlainText -Force)
+
+    $exportOperationStatusLink = $exportOperation.OperationStatusLink
+    #Write-Host "Export Operation Response: $($exportOperation | ConvertTo-Json -Depth 3)"
+
+    Write-Host "Database $($sourceSqlServerName).$($sourceDatabaseName) export initiated..."
+
+    # Wait for Export Completion (Polling)
+    $exitExportStatus = ""
+    do {
+        Start-Sleep -Seconds 10
+        $exportStatus = Get-AzSqlDatabaseImportExportStatus -OperationStatusLink $exportOperationStatusLink
+        #DEBUG: Write-Host "Export Status: $($exportStatus | ConvertTo-Json -Depth 3)"
+        Write-Host "Export Status: $($exportStatus.RequestType) $($exportStatus.Status), $($exportStatus.StatusMessage)"
+        $exitExportStatus = $exportStatus.Status
+    } while ($exportStatus.Status -eq "InProgress")
+
+    #Write-Host "Bacpac URI: $bacpacUri"
+
+    if ($exitExportStatus -ne "Succeeded"){
+        Write-Error "Could not export source database $sourceDatabaseName. Cancel..."
+        exit 0
+    }
+
+    $expiryTime = (Get-Date).AddHours(2) # Set link expiration (e.g., 2 hours from now)
+    # Generate a SAS token
+    $sasToken = New-AzStorageBlobSASToken -Container $sourceStorageContainerName `
+        -Blob $sourceBacpacName `
+        -Context $storageContext `
+        -Permission r `
+        -ExpiryTime $expiryTime
+
+    # Generate the full BACPAC URL with SAS Token
+    $sourceBacpacUriWithSAS = "https://$sourceStorageAccountName.blob.core.windows.net/$sourceStorageContainerName/$sourceBacpacName$sasToken"
+    Write-Host "SAS Token Link: $sourceBacpacUriWithSAS"
+
+
+    if ($sourceSubscriptionId -ne $targetSubscriptionId){
+        # Switch to Target Subscription
+        Write-Host "Switching to target subscription..."
+        Set-AzContext -SubscriptionId $targetSubscriptionId
+    }
+
+    $database = Get-AzSqlDatabase -ResourceGroupName $targetResourceGroup -ServerName $targetSqlServerName -DatabaseName $targetDatabaseName -ErrorAction SilentlyContinue
+    #Write-Host "Check existing database: $($database | ConvertTo-Json -Depth 3)"
+    $targetDatabaseEdition = $targetDatabaseEditionIfNotSet
+    $targetDatabaseServiceObjectiveName = $targetDatabaseServiceObjectiveNameIfNotSet
+    $targetDatabaseMaxSizeBytes = $targetDatabaseMaxSizeBytesIfNotSet
+    if ($database) {
+        Write-Host "Database '$targetDatabaseName' already exists on server '$targetSqlServerName'."
+        $targetDatabaseEdition = $database.Edition
+        $targetDatabaseServiceObjectiveName = $database.CurrentServiceObjectiveName
+        $targetDatabaseMaxSizeBytes = $database.MaxSizeBytes
+        Write-Host "Edition:  '$targetDatabaseEdition'"
+        Write-Host "ServiceObjectiveName:  '$targetDatabaseServiceObjectiveName'"
+        Write-Host "DatabaseMaxSizeBytes:  '$targetDatabaseMaxSizeBytes'"
+
+        # Get Storage Account Key
+        $targetStorageKey = (Get-AzStorageAccountKey -ResourceGroupName $targetStorageAccountResourceGroup -Name $targetStorageAccountName)[0].Value
+        # Get Storage Context
+        $targetStorageContext = New-AzStorageContext -StorageAccountName $targetStorageAccountName -StorageAccountKey $targetStorageKey
+
+        # Export Database to Azure Storage
+        Write-Host "Exporting target database to BACPAC file..."
+        $targetBacpacUri = "https://$targetStorageAccountName.blob.core.windows.net/$targetStorageContainerName/$targetBacpacName"
+        Write-Host "Target Bacpac URI: $targetBacpacUri"
+
+        $targetExportOperation = New-AzSqlDatabaseExport -ResourceGroupName $targetResourceGroup `
+            -ServerName $targetSqlServerName `
+            -DatabaseName $targetDatabaseName `
+            -StorageKeyType "StorageAccessKey" `
+            -StorageKey $targetStorageKey `
+            -StorageUri $targetBacpacUri `
+            -AdministratorLogin $targetSqlServerUsername `
+            -AdministratorLoginPassword (ConvertTo-SecureString $targetSqlServerPassword -AsPlainText -Force)
+
+        $targetExportOperationStatusLink = $targetExportOperation.OperationStatusLink
+        #Write-Host "Export Operation Response: $($targetExportOperationStatusLink | ConvertTo-Json -Depth 3)"
+
+        Write-Host "Target database $targetDatabaseName export initiated..."
+
+        # Wait for Export Completion (Polling)
+        $exitExportStatus = ""
+        do {
+            Start-Sleep -Seconds 10
+            $targetExportStatus = Get-AzSqlDatabaseImportExportStatus -OperationStatusLink $targetExportOperationStatusLink
+            #DEBUG: Write-Host "Export Status: $($exportStatus | ConvertTo-Json -Depth 3)"
+            Write-Host "Export Status: $($targetExportStatus.RequestType) $($targetExportStatus.Status), $($targetExportStatus.StatusMessage)"
+            $exitExportStatus = $targetExportStatus.Status
+        } while ($targetExportStatus.Status -eq "InProgress")
+
+        if ($exitExportStatus -ne "Succeeded"){
+            Write-Error "Could not export target database $targetDatabaseName before we overwrite it. Cancel..."
+            exit 0
+        }
+        
+        Write-Host "Deleting existing target database $targetDatabaseName"
+        Remove-AzSqlDatabase -ResourceGroupName $targetResourceGroup -ServerName $targetSqlServerName -DatabaseName $targetDatabaseName -Force
+        Write-Host "Database $targetDatabaseName deleted. Proceeding with import."
+    } else {
+        Write-Host "Database $targetDatabaseName does not exist. Proceeding with import."
+    }
+
+    if ($targetDatabaseEdition -match "^\s*$"){
+        $targetDatabaseEdition = $targetDatabaseEditionIfNotSet
+    }
+    if ($targetDatabaseServiceObjectiveName -match "^\s*$"){
+        $targetDatabaseServiceObjectiveName = $targetDatabaseServiceObjectiveNameIfNotSet
+    }
+    if ($targetDatabaseMaxSizeBytes -match "^\s*$"){
+        $targetDatabaseMaxSizeBytes = $targetDatabaseMaxSizeBytesIfNotSet
+    }
+
+    # Import Database from BACPAC
+    Write-Host "Importing database $sourceDatabaseName => $targetDatabaseName from source BACPAC file..."
+    $importOperation = New-AzSqlDatabaseImport -ResourceGroupName $targetResourceGroup `
+        -ServerName $targetSqlServerName `
+        -DatabaseName $targetDatabaseName `
+        -StorageKeyType "StorageAccessKey" `
+        -StorageKey $storageKey `
+        -StorageUri $bacpacUri `
+        -Edition $targetDatabaseEdition `
+        -ServiceObjectiveName $targetDatabaseServiceObjectiveName `
+        -DatabaseMaxSizeBytes $targetDatabaseMaxSizeBytes `
+        -AdministratorLogin $targetSqlServerUsername `
+        -AdministratorLoginPassword (ConvertTo-SecureString $targetSqlServerPassword -AsPlainText -Force)
+    Write-Host "Database import $targetDatabaseName initiated..."
+
+    $importOperationStatusLink = $importOperation.OperationStatusLink
+
+    do {
+        Start-Sleep -Seconds 10
+        $importStatus = Get-AzSqlDatabaseImportExportStatus -OperationStatusLink $importOperationStatusLink
+        Write-Host "Import Status: $($importStatus.RequestType) $($importStatus.Status), $($importStatus.StatusMessage)"
+    } while ($importStatus.Status -eq "InProgress")
+
+    Write-Host "Database copy $sourceDatabaseName => $targetDatabaseName completed successfully!" -ForegroundColor Green
+
+    # if ($true -eq $destinationDatabaseExist -and $true -eq $DestinationRunDatabaseBackup) {
+    #     $missingParam = $false
+    #     if($null -eq $DestinationSqlDatabaseLogin -or "" -eq $DestinationSqlDatabaseLogin) {
+    #         Write-Warning "You want to make a destination database backup and missing the -DestinationSqlDatabaseLogin param."
+    #         $missingParam = $true
+    #     }
+    #     if($null -eq $DestinationSqlDatabasePassword -or "" -eq $DestinationSqlDatabasePassword) {
+    #         Write-Warning "You want to make a destination database backup and missing the DestinationSqlDatabasePassword param."
+    #         $missingParam = $true
+    #     }
+
+    #     if ($true -eq $missingParam) {
+    #         Write-Error "Parameters is missing."
+    #         exit
+    #     }
+
+    #     Backup-Database -SubscriptionId $SubscriptionId -ResourceGroupName $DestinationResourceGroupName -SqlServerName $DestinationSqlServerName -SqlDatabaseName $DestinationSqlDatabaseName -SqlDatabaseLogin $DestinationSqlDatabaseLogin -SqlDatabasePassword $DestinationSqlDatabasePassword -StorageAccountName $DestinationStorageAccount -StorageAccountContainer $DestinationStorageAccountContainer
+    # }
+
+    # # Drop destination database if exist
+    # if ($true -eq $destinationDatabaseExist) {
+    #     Unpublish-Database -ResourceGroupName $DestinationResourceGroupName -SqlServerName $DestinationSqlServerName -SqlDatabaseName $DestinationSqlDatabaseName
+    # }
+
+    # # Copy the source database to destination database
+    # Set-Item Env:\SuppressAzurePowerShellBreakingChangeWarnings "true"
+    # Write-Host "Start copying database '$SourceSqlDatabaseName' to '$DestinationSqlDatabaseName'."
+    # $databaseCopy = New-AzSqlDatabaseCopy -ResourceGroupName $SourceResourceGroupName -ServerName $SourceSqlServerName -DatabaseName $SourceSqlDatabaseName -CopyResourceGroupName $DestinationResourceGroupName -CopyServerName $DestinationSqlServerName -CopyDatabaseName $DestinationSqlDatabaseName
+    # $databaseCopy
+
+    # Write-Host "--------------------------------------------------------------"
+
+    # # Check the SKU on destination database after copy. 
+    # $destinationDatabaseResult = Get-AzSqlDatabase -ResourceGroupName $DestinationResourceGroupName -ServerName $DestinationSqlServerName -DatabaseName $DestinationSqlDatabaseName
+    # $destinationDatabaseResult
+
+    # Write-Host "--------------------------------------------------------------"
+    
+    # if ($false -eq [string]::IsNullOrEmpty($SqlSku)) {
+    #     Set-AzSqlDatabase -ResourceGroupName $DestinationResourceGroupName -DatabaseName $DestinationSqlDatabaseName -ServerName $DestinationSqlServerName -RequestedServiceObjectiveName $SqlSku #-Edition "Standard"
+    #     #try {
+    #     #    $databaseCopy = New-AzSqlDatabaseCopy -ResourceGroupName $SourceResourceGroupName -ServerName $SourceSqlServerName -DatabaseName $SourceSqlDatabaseName -CopyResourceGroupName $DestinationResourceGroupName -CopyServerName $DestinationSqlServerName -CopyDatabaseName $DestinationSqlDatabaseName -ServiceObjectiveName $SqlSku
+    #     #} catch {
+    #     #    $errorMessage = $_.ErrorDetails
+    #     #    if ($errorMessage -contains "does not support the sku") {
+    #     #        Write-Error "Database '$SourceSqlDatabaseName' is NOT copied to '$DestinationSqlDatabaseName'."
+    #     #    } else {
+    #     #        Write-Warning $errorMessage
+    #     #    }
+    #     #}
+    # } #else {
+    # #    $databaseCopy = New-AzSqlDatabaseCopy -ResourceGroupName $SourceResourceGroupName -ServerName $SourceSqlServerName -DatabaseName $SourceSqlDatabaseName -CopyResourceGroupName $DestinationResourceGroupName -CopyServerName $DestinationSqlServerName -CopyDatabaseName $DestinationSqlDatabaseName
+    # #    Write-Host "Database '$SourceSqlDatabaseName' is copied to '$DestinationSqlDatabaseName'."
+    # #}
+    # Write-Host "--------------------------------------------------------------"
+
+    # # Check the SKU on destination database after copy. 
+    # $destinationDatabaseResult = Get-AzSqlDatabase -ResourceGroupName $DestinationResourceGroupName -ServerName $DestinationSqlServerName -DatabaseName $DestinationSqlDatabaseName
+    # $destinationDatabaseResult
+
+
+}
+
 function Remove-Blobs{
     <#
     .SYNOPSIS
