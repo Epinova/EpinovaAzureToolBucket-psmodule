@@ -3,7 +3,7 @@ name: Publish PowerShell Module
 on:
   push:
     branches:
-      - feature/**
+      - main
   workflow_dispatch:
 
 jobs:
