@@ -23,12 +23,21 @@ Account/Service Prinicipal under which script will work should have proper permi
 Set-ExecutionPolicy -Scope CurrentUser Unrestricted
 ```
 This is to remove warnings if your environment does not trust these scripts.  
-3.	Then install the EpinovaAzureToolBucket. 
+3. Install or update Az PowerShell
+```powershell
+# If you need to install AzRm  
+Install-Module -Name Az -Repository PSGallery -Force  
+# If you need to update AzRm  
+Update-Module -Name Az -Force  
+```  
+4.	Then install the EpinovaAzureToolBucket. 
 ```powershell
 Install-Module EpinovaAzureToolBucket -Scope CurrentUser -Force
 ```  
-4.	Add the code below and make the changes needed to fit your context.
+5.	Add the code below and make the changes needed to fit your context.
 ```powershell
+#Install-Module -Name Az -Repository PSGallery -Force
+#Update-Module -Name Az -Force
 Install-Module EpinovaAzureToolBucket -Scope CurrentUser -Force
 
 $Tags = @{
@@ -52,14 +61,14 @@ $CmsVersion = "12" # 11|12
 $Location = "swedencentral"
 $SqlSku = "Basic"
 $AppPlanSku = "B1"
-$UseApplicationInsight = $true
-$UseAuthentication = $true
+$UseApplicationInsight = $True
+$UseAuthentication = $True
 
-New-OptimizelyCmsResourceGroupBicep -SubscriptionId $SubscriptionId -ResourceGroupName $ResourceGroupName -Environment $Environment -DatabaseLogin $DatabaseLogin -DatabasePassword $DatabasePassword -Tags $Tags -CmsVersion $CmsVersion -Location $Location -UseApplicationInsight $UseApplicationInsight -SqlSku $SqlSku -AppPlanSku $AppPlanSku -UseDeviceAuthentication $UseAuthentication
+New-OptimizelyCmsResourceGroupBicep -SubscriptionId $SubscriptionId -ResourceGroupName $ResourceGroupName -Environment $Environment -DatabaseLogin $DatabaseLogin -DatabasePassword $DatabasePassword -Tags $Tags -CmsVersion $CmsVersion -Location $Location -UseApplicationInsight $UseApplicationInsight -SqlSku $SqlSku -AppPlanSku $AppPlanSku -UseAuthentication $UseAuthentication
 ```
 
 ```powershell
-New-OptimizelyCmsResourceGroupBicep -SubscriptionId '95a9fd36-7851-4918-b8c9-f146a219982c' -ResourceGroupName 'mycoolwebsite' -Environment "inte" -DatabaseLogin "databasedbuser" -DatabasePassword 'KXIN_rhxh3holt_s8it' -CmsVersion "12" -Tags @{ "Environment"="dev";"Owner"="ove.lartelius@epinova.se";"App"="Optimizely";"Client"="Client name";"Project"="Project name";"ManagedBy"="Ove Lartelius";"Cost"="Internal";"Department"="IT";"Expires"="";  } -Location = "westeurope" -UseApplicationInsight $true -UseAuthentication $true
+New-OptimizelyCmsResourceGroupBicep -SubscriptionId '95a9fd36-7851-4918-b8c9-f146a219982c' -ResourceGroupName 'mycoolwebsite' -Environment "inte" -DatabaseLogin "databasedbuser" -DatabasePassword 'KXIN_rhxh3holt_s8it' -CmsVersion "12" -Tags @{ "Environment"="dev";"Owner"="ove.lartelius@epinova.se";"App"="Optimizely";"Client"="Client name";"Project"="Project name";"ManagedBy"="Ove Lartelius";"Cost"="Internal";"Department"="IT";"Expires"="";  } -Location = "westeurope" -UseApplicationInsight $True -UseAuthentication $True
 ```
 
 
