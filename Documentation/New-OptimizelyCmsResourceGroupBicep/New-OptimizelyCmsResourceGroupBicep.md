@@ -8,7 +8,8 @@ The following resources will be created:
 * Storage account
 * SQL Server
 * SQL Database
-![CreatedResources](CreatedResources.jpg)
+![CreatedResources](CreatedResources.jpg)  
+If the *.bicep file does not exist the function will try to download the bicep file from GitHub repo and place it in the same folder as the PowerSHell module script.
 
 ## Prerequisite
 ### PowerShellGet

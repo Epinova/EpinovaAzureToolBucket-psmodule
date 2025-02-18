@@ -602,8 +602,60 @@ function New-OptimizelyCmsResourceGroupBicep {
     $bicepFile = "$PSScriptRoot\cms$CmsVersion.bicep"
     Write-Host "Use bicep: $bicepFile"
 
+    Import-BicepFiles -CmsVersion $CmsVersion
+
     # Create resources from deployment template
     New-AzDeployment -Location $Location -TemplateFile $bicepFile -TemplateParameterObject $Parameters
+}
+
+function Import-BicepFiles{
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [string] $CmsVersion
+    )
+
+    $bicepFile = "$PSScriptRoot\cms$CmsVersion.bicep"
+    $githubBaseUrl = "https://raw.githubusercontent.com/Epinova/EpinovaAzureToolBucket-psmodule/refs/heads/main/Modules/EpinovaAzureToolBucket/"
+
+    # Check if bicep exist on disc. If not it will download the script.
+    if (Test-Path $bicepFile -PathType Leaf) {
+        Write-Host "File $bicepFile exists."
+    } else {
+        Write-Host "File $bicepFile does not exist."
+        $gitHubUrl = $githubBaseUrl + "cms$CmsVersion.bicep"
+        Invoke-WebRequest -Uri $gitHubUrl -OutFile $bicepFile
+        Write-Host "File downloaded successfully to: $bicepFile"
+        $folderPath = $FolderPath = Join-Path -Path $PSScriptRoot -ChildPath "Modules"
+        New-Item -Path $folderPath -ItemType Directory | Out-Null
+        Write-Host "Folder created successfully at: $folderPath"
+
+        $moduleFile = "$PSScriptRoot\lock.bicep"
+        $gitHubUrl = $githubBaseUrl + "Modules/lock.bicep"
+        Invoke-WebRequest -Uri $gitHubUrl -OutFile $moduleFile
+        Write-Host "File downloaded successfully to: $moduleFile"
+
+        $moduleFile = "$PSScriptRoot\servicebus.bicep"
+        $gitHubUrl = $githubBaseUrl + "Modules/servicebus.bicep"
+        Invoke-WebRequest -Uri $gitHubUrl -OutFile $moduleFile
+        Write-Host "File downloaded successfully to: $moduleFile"
+
+        $moduleFile = "$PSScriptRoot\sql.bicep"
+        $gitHubUrl = $githubBaseUrl + "Modules/sql.bicep"
+        Invoke-WebRequest -Uri $gitHubUrl -OutFile $moduleFile
+        Write-Host "File downloaded successfully to: $moduleFile"
+
+        $moduleFile = "$PSScriptRoot\storage.bicep"
+        $gitHubUrl = $githubBaseUrl + "Modules/storage.bicep"
+        Invoke-WebRequest -Uri $gitHubUrl -OutFile $moduleFile
+        Write-Host "File downloaded successfully to: $moduleFile"
+
+        $moduleFile = "$PSScriptRoot\web.bicep"
+        $gitHubUrl = $githubBaseUrl + "Modules/web.bicep"
+        Invoke-WebRequest -Uri $gitHubUrl -OutFile $moduleFile
+        Write-Host "File downloaded successfully to: $moduleFile"
+    }
 }
 
 function Get-OptimizelyCmsConnectionStrings{
